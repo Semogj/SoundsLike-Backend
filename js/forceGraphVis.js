@@ -12,7 +12,6 @@ function create_force_visualization(pageElemSelector, config){
         bordersLimit : getProperty(config, "bordersLimit", true), 
         fill : d3.scale.category20()
     };
-    console.log(o);
     //set up the layout (the physics context)
     o.layout = d3.layout.force()
     .gravity(o.gravity)
@@ -45,7 +44,11 @@ function create_force_visualization(pageElemSelector, config){
     //
     //visualization context = canvas (o.canvas)
     //physics context = layout (o.layout)
-                
+    
+    //maping some functions
+    o.start = o.layout.start;
+    o.stop = o.layout.stop;
+    o.tick = o.layout.tick;
     return o;
 }
 
@@ -55,7 +58,6 @@ function init_visualization(graphObj, nodes, links){
     .range(["#0066FF", "#00CC99", "#00CC00", "#99CC00", "#FF9900", "#FF6600", "#FF3300", "#FF0000", "#B20000"]);
     
     var o = graphObj;
-    console.log(o);
     //add links to the visualization
     o.visLinks = o.canvas.selectAll("div.link")
     .data(links)
@@ -123,13 +125,14 @@ function init_visualization(graphObj, nodes, links){
     //        .on('dragend', dragEnd) 
     //    );
     .call(o.layout.drag);
-             
+    
     //tell the physics how to update and to start
     o.layout
     .nodes(nodes)
     .links(links)
     .on("tick", tick)
     .start();
+    
     function tick() {
         o.visNodes.style("left", function(d) {
             var pos = 0.0;
@@ -160,7 +163,7 @@ function init_visualization(graphObj, nodes, links){
         .style("-ms-transform", transform)
         .style("-o-transform", transform)
         .style("transform", transform);
-    }
+    };
 
     function transform(d) {
         return "rotate(" + Math.atan2(
