@@ -101,7 +101,7 @@
 
         <div>
             <div>Last.fm Username:<input type="text" id="txtLastfmUsername"  value="semogj" />
-                Number of Top Artists: <input id="topArtistsNumber" type="number" min="1" max="100" value="10" />             
+                Number of Top Artists: <input id="topArtistsNumber" type="number" min="3" max="100" value="10" />             
             </div>
             <div>
                 Min Similarity Value (0 - 100): <input id="minSimilarity" type="range" min="0" max="100" value ="40" disabled=""/> <span id="simVal">40</span>
@@ -126,6 +126,7 @@
                 utilizadas cores quentes para relações fortes e cores frias para relações fracas.</p>
             <p>O gráfico do lasfm apresenta a lista de artistas mais ouvidos pelo utilizador especificado (nós a vermelho) e os artistas
                 relacionados (nós a azul). As relações representam similaridade entre artistas.</p>
+            
         </div>
         <script type="text/javascript">
             var lastfmCache = new LastFMCache();
