@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+        <title>Force-Directed Graph</title>
+        <script type="text/javascript" src="js/d3.v2.js"></script>
+        <script type="text/javascript" src="js/jquery-1.8.1.js"></script>
+        <script type="text/javascript" src="js/lastfm.api.md5.js"></script>
+        <script type="text/javascript" src="js/lastfm.api.js"></script>
+        <script type="text/javascript" src="js/lastfm.api.cache.js"></script>
+        <script type="text/javascript" src="js/utils.js"></script>
+        <script type="text/javascript" src="js/forceGraphVis.js"></script>
+        <style type="text/css">
+
+            circle.node {
+                cursor: pointer;
+                stroke: #000;
+                stroke-width: .5px;
+            }
+
+            line.link {
+                fill: none;
+                stroke: #9ecae1;
+                stroke-width: 1.5px;
+            }
+            .info{
+                color: green;
+                font-weight: bold;
+            }
+            .warning{
+                color: orange;
+                font-weight: bold;
+            }
+            .error{
+                color: red;
+                font-weight: bold;
+            }
+            div.node {
+                border: 2px solid #000;
+                border-radius: 6px;
+                width: 12px;
+                height: 12px;
+                position: absolute;
+                z-index: 500;
+                display: table;
+            }
+            div.node .text{
+                width: 100%;
+                font-size: 10px;
+                text-align: center;
+                display: table-cell;
+                vertical-align: middle;
+            }
+
+            div.node.group_0{
+                border-color: #cc0000 !important; /*dark red tone*/
+                background-color: #ff3333 !important; /*red tone*/
+            }
+            #chart{
+                border: 2px solid;
+                position: relative;
+                overflow: hidden;
+
+                -webkit-user-select: none;
+                -khtml-user-select: none;
+                -moz-user-select: none;
+                -o-user-select: none;
+                user-select: none;
+            }
+            div.link {
+                position: absolute;
+                border: 1px solid #5F5F5F;
+                border-style: solid;
+                height: 4px;
+                -webkit-transform-origin: 0 0;
+                -moz-transform-origin: 0 0;
+                -ms-transform-origin: 0 0;
+                -o-transform-origin: 0 0;
+                transform-origin: 0 0;
+            }
+
+        </style>
+    </head>
+    <body>
+
+        <div>
+            <div>Last.fm Username:<input type="text" id="txtLastfmUsername"  value="semogj" />
+                Number of Top Artists: <input id="topArtistsNumber" type="number" min="1" max="100" value="10" />             
+            </div>
+            <div>
+                Min Similarity Value (0 - 100): <input id="minSimilarity" type="range" min="0" max="100" value ="40" /> <span id="simVal">40</span>
+                Max Similar Neighbors: <input id="maxNeighbors" type="number" min="1" max="100" value="20" />
+                <input id="btLastfmUsername" type="button" value="Fetch Info" />
+                <input id="btTest1" type="button" value="Use Test Data 1" /> 
+                <input id="btTest2" type="button" value="Use Test Data 2" />  
+                <input id="btTest3" type="button" value="Use Test Data 3" />  
+            </div>
+            <div id="info"></div>
+        </div>
+        <div id="chart"></div>
+        <div id="output"></div>
+        <script type="text/javascript">
+            var lastfmCache = new LastFMCache();
+            var lastfm = new LastFM({
+                apiKey: '58c14554d4b5a87e1486bdff11b44e11',
+                apiSecret: '0d3d27ec57beea0bbaa341f45cce9dfb',
+                cache: lastfmCache});
+            $('#minSimilarity').change(function(e){
+                $('simVal').text($('minSimilarity').val());
+            })
+            $('#btLastfmUsername').click(fetchInfoEvent);
+            $('#txtLastfmUsername').keydown(function(e) {
+                if(e.keyCode == 13) {
+                    e.preventDefault();
+                    fetchInfoEvent();
+                }
+            });
+            $('#btTest1').click(testData1Event);
+            $('#btTest2').click(testData2Event);
+            $('#btTest3').click(testData3Event);
+            var settings = {
+                defaultTopArtists : 10,
+                defaultSimilarArtists : 50,
+                matchMinimum: 0.4
+            }
+            function testData1Event(event){
+                updateVisualization([{name:'A'}, {name:'B'},{name:'C'}, {name:'D'}, {name:'E'} ,{name:'F'}, {name:'G'}, {name:'H'},{name:'I'},{name:'J'}],
+                [{source:0, target:1, value:1},{source:0, target:2, value:1},{source:0, target:3, value:0.1},
+                    {source:0, target:4, value:0},{source:0, target:5, value:0.6},{source:0, target:6, value:0.5},
+                    {source:0, target:7, value:0.5},{source:0, target:8, value:0.5},{source:0, target:9, value:0.5}]);
+            }
+            
+            function testData2Event(event){
+                var nodes = [
+                   {name: "Sound Event 1", locked:true, nodeGroup:0, bordersLimit:true}, //0
+                    {name: "Similar Event: 1.0"}, //1
+                    {name: "Similar Event: 1.0"}, //2
+                    {name: "Similar Event: 1.0"}, //3
+                    {name: "Similar Event: 1.0"}, //4
+                    {name: "Similar Event: 0.8"}, //5
+                    {name: "Similar Event: 0.8"}, //6
+                    {name: "Similar Event: 0.8"}, //7
+                    {name: "Similar Event: 0.7"}, //8
+                    {name: "Similar Event: 0.5"}, //9
+                    {name: "Similar Event: 0.5"}, //10
+                    {name: "Similar Event: 0.5"}, //11
+                    {name: "Similar Event: 0.5"}, //12
+                    {name: "Similar Event: 0.5"}, //13
+                    {name: "Similar Event: 0.1"},  //14
+                    {name: "Similar Event: 0.1"},  //15
+                    {name: "Similar Event: 0.8"},  //16
+                    {name: "Similar Event: 0.8"},  //17
+                    {name: "Similar Event: 0.8"},  //18
+                    {name: "Similar Event: 1.0"},  //19
+                    {name: "Similar Event: 0.95"},  //20
+                    {name: "Similar Event: 0.7"},  //21
+                    {name: "Similar Event: 0.8"},  //22
+                    {name: "Similar Event: 0.8"},  //23
+                ];
+                var links = [
+                    {source:0, target:1, value:1.0},
+                    {source:0, target:2, value:1.0},
+                    {source:0, target:3, value:1.0},
+                    {source:0, target:4, value:1.0},
+                    {source:0, target:5, value:0.8},
+                    {source:0, target:6, value:0.8},
+                    {source:0, target:7, value:0.8},
+                    {source:0, target:8, value:0.7},
+                    {source:0, target:9, value:0.5},
+                    {source:0, target:10, value:0.5},
+                    {source:0, target:11, value:0.5},
+                    {source:0, target:12, value:0.5},
+                    {source:0, target:13, value:0.5},
+                    {source:0, target:14, value:0.1},
+                    {source:0, target:15, value:0.1},
+                    {source:0, target:16, value:0.8},
+                    {source:0, target:17, value:0.8},
+                    {source:0, target:18, value:0.8},
+                    {source:0, target:19, value:1.0},
+                    {source:0, target:20, value:0.95},
+                    {source:0, target:21, value:0.7},
+                    {source:0, target:22, value:0.8},
+                    {source:0, target:23, value:0.8},
+                ];
+                var config = {width: 1024, height: 600, gravity: 0.01, radius: 20, charge:-100, 
+                    defaultLinkDistance: 50, minLinkDistance:10, maxLinkDistance:160};
+                updateVisualization(nodes, links, config);
+            }
+            function testData3Event(event){
+                var nodes = [
+                    {name: "Sound Event 1", locked:true, nodeGroup:0, bordersLimit:true}, //0
+                    {name: "Similar Event: 1.0"}, //1
+                    {name: "Similar Event: 1.0"}, //2
+                    {name: "Similar Event: 1.0"}, //3
+                    {name: "Similar Event: 1.0"}, //4
+                    {name: "Similar Event: 0.8"}, //5
+                    {name: "Similar Event: 0.8"}, //6
+                    {name: "Similar Event: 0.8"}, //7
+                    {name: "Similar Event: 0.7"}, //8
+                    {name: "Similar Event: 0.5"}, //9
+                    {name: "Similar Event: 0.5"}, //10
+                    {name: "Similar Event: 0.5"}, //11
+                    {name: "Similar Event: 0.5"}, //12
+                    {name: "Similar Event: 0.5"}, //13
+                    {name: "Similar Event: 0.1"},  //14
+                    {name: "Similar Event: 0.1"},  //15
+                    {name: "Similar Event: 0.8"},  //16
+                    {name: "Similar Event: 0.8"},  //17
+                    {name: "Similar Event: 0.8"},  //18
+                    {name: "Similar Event: 1.0"},  //19
+                    {name: "Similar Event: 0.95"},  //20
+                    {name: "Similar Event: 0.7"},  //21
+                    {name: "Similar Event: 0.8"},  //22
+                    {name: "Similar Event: 0.8"},  //23
+                    {name: "Big Node", nodeGroup:0},  //24
+                    {name: "Big Node", nodeGroup:0},  //25
+                    {name: "Big Node", nodeGroup:0},  //26
+                    {name: "Big Node", nodeGroup:0},  //27
+                    {name: "Big Node", nodeGroup:0},  //28
+                    {name: "Big Node", nodeGroup:0},  //29
+                    {name: "Big Node", nodeGroup:0},  //30
+                ];
+                var bigNodeLinkMult = 1.25;
+                var links = [
+                    {source:0, target:1, value:1.0},
+                    {source:0, target:2, value:1.0},
+                    {source:0, target:3, value:1.0},
+                    {source:0, target:4, value:1.0},
+                    {source:0, target:5, value:0.8},
+                    {source:0, target:6, value:0.8},
+                    {source:0, target:7, value:0.8},
+                    {source:0, target:8, value:0.7},
+                    {source:0, target:9, value:0.5},
+                    {source:0, target:10, value:0.5},
+                    {source:0, target:11, value:0.5},
+                    {source:0, target:12, value:0.5},
+                    {source:0, target:13, value:0.5},
+                    {source:0, target:14, value:0.1},
+                    {source:0, target:15, value:0.1},
+                    {source:0, target:16, value:0.8},
+                    {source:0, target:17, value:0.8},
+                    {source:0, target:18, value:0.8},
+                    {source:0, target:19, value:1.0},
+                    {source:0, target:20, value:0.95},
+                    {source:0, target:21, value:0.7},
+                    {source:0, target:22, value:0.8},
+                    {source:0, target:23, value:0.8},
+                    {source:0, target:24, value:0, lengthMult:bigNodeLinkMult},
+                    {source:0, target:25, value:0, lengthMult:bigNodeLinkMult},
+                    {source:0, target:26, value:0, lengthMult:bigNodeLinkMult},
+                    {source:0, target:27, value:0, lengthMult:bigNodeLinkMult},
+                    {source:0, target:28, value:0, lengthMult:bigNodeLinkMult},
+                    {source:0, target:29, value:0, lengthMult:bigNodeLinkMult},
+                    {source:0, target:30, value:0, lengthMult:bigNodeLinkMult},
+                ];
+                var config = {width: 1024, height: 600, gravity: 0.035, radius: 20, charge:-110, 
+                    defaultLinkDistance: 50, minLinkDistance:10, maxLinkDistance:160, bordersLimit:false};
+                updateVisualization(nodes, links, config);
+            }
+            
+            function fetchInfoEvent(event){
+                
+                var button = $('#btLastfmUsername').attr('disabled', 'true');
+                var username = $.trim($('#txtLastfmUsername').val());
+                //empty username
+                if(username.length == 0){
+                    setInfo("Please input a valid Last.fm user!", 'error');
+                    return;
+                }
+                
+                var nTopArtists = $('#topArtistsNumber').val();
+                var minSimilarityVal = $('#minSimilarity').val() / 100;
+                var maxNeighbors = $('#maxNeighbors').val();
+                
+                setInfo("Extracting " + username + " top artists...");
+                try{
+                    lastfm.user.getTopArtists({user: username, period:'overall', limit: nTopArtists}, 
+                    {success: processTopArtists, error: lastfmError});
+                }catch(ex){
+                    setInfo(ex.message, 'error');    
+                }
+                function processTopArtists(data){
+                    //console.log(data);
+                
+                    var topArtistsArr = data.topartists.artist;
+  
+                    var cacheKey = username + "topArtists" + topArtistsArr.length;
+                    
+                    var nodeCache = cacheGet(cacheKey + "_nodes");
+                    var linkCache = cacheGet(cacheKey + "_link");
+                    if(isset(nodeCache) && isset(linkCache)){
+                        console.log("Cached values found!")
+                        updateVisualization(nodeCache, linkCache);
+                        return;
+                    }else{
+                        console.log("No cached values are available...")
+                    }
+                    
+                    var taSize = topArtistsArr.length;
+                
+                    for(var i = 0; i < taSize; i++){
+                        topArtistsArr[i].nodeGroup = 0; 
+                    }            
+                    //nodes
+                    var artistsArr = new Array().concat(topArtistsArr);
+                    //links
+                    var relationsArray = new Array();  
+                
+                    var taIndex = 0;
+                    var currentTaArtist = topArtistsArr[taIndex];
+                
+                    var perc = Math.round(100 * taIndex / taSize); 
+                    setInfo("("+ perc +" %) Fetching " + currentTaArtist.name + " related artists...");
+                    lastfm.artist.getSimilar({artist: currentTaArtist.name , mbid: currentTaArtist.mbid, limit: maxNeighbors}, 
+                    {
+                        success: processSimilarArtists, error: lastfmError
+                    });
+                               
+                    function processSimilarArtists(data){
+                        var perc = Math.round(100 * taIndex / taSize); 
+                        setInfo("("+ perc +" %) Processing " + currentTaArtist.name + " related artists...");
+                        var similarArtistArr = data.similarartists.artist;
+                        var similarSize = similarArtistArr.length;
+                        for(var i = 0; i < similarSize; i++){
+                            if(similarArtistArr[i].match >= minSimilarityVal){
+                                var index = insertIntoArtistSet(artistsArr, similarArtistArr[i]);
+                                insertIntoLinkSet(relationsArray, {source: taIndex, target: index, value: similarArtistArr[i].match});
+                            }
+                        }
+                        //recursive call for getting top artist similar
+                        taIndex++;
+                        currentTaArtist = topArtistsArr[taIndex];
+                        if(taIndex < taSize){
+                            var perc = Math.round(100 * taIndex / taSize); 
+                            setInfo("("+ perc +" %) Fetching " + currentTaArtist.name + " related artists...");
+                            lastfm.artist.getSimilar({artist: currentTaArtist.name , mbid: currentTaArtist.mbid, limit: settings.defaultSimilarArtists}, 
+                            {
+                                success: processSimilarArtists, error: lastfmError
+                            }); 
+                        }else{
+                            cacheStore(cacheKey + "_nodes", artistsArr);
+                            cacheStore(cacheKey + "_links", relationsArray);
+                            updateVisualization(artistsArr, relationsArray);
+                        }      
+                    }
+                }
+            
+            
+                function lastfmError(code, message){ 
+                    setInfo(message, 'error');
+                    $('#btLastfmUsername').removeAttr('disabled');
+                }
+            
+            }
+            
+            
+            
+            function updateVisualization(nodes, links, config){
+                setInfo(nodes.length + ' nodes and '+ links.length + ' connection. Rendering visualization...');
+                console.log(nodes);
+                console.log(links);
+                outputArtistNames(nodes);
+                $('#btLastfmUsername').removeAttr('disabled');
+                
+                config = issetDefault(config, {width: 1024, height: 600, gravity: 0.08, radius: 20, charge:-100, 
+                    defaultLinkDistance: 50, minLinkDistance:12, maxLinkDistance:130});
+                var graphObj = create_force_visualization("#chart", config);
+                init_visualization(graphObj, nodes, links);
+            }
+            
+            /**
+             * Add an artist to a specific set and returns the position in the array.
+             * If the artist exists, returns the position, if not inserts the artist
+             *  into the array and returns the position.
+             */
+            function insertIntoArtistSet(artistArray, lastFmArtist){
+                var size = artistArray.length;
+                if(isset(lastFmArtist.mbid)){
+                    for(var i = 0; i < size; i++){
+                        if(artistArray[i].name == lastFmArtist.name && artistArray[i].mbid == lastFmArtist.mbid){
+                            return i;
+                        }
+                    }
+                }else{
+                    for(var i = 0; i < size; i++){
+                        if(artistArray[i].name == lastFmArtist.name){
+                            return i;
+                        }
+                    }
+                }  
+                artistArray.push({
+                    name: lastFmArtist.name, 
+                    mbid: isset(lastFmArtist.mbid) ? lastFmArtist.mbid : null,
+                    url: isset(lastFmArtist.url) ? lastFmArtist.url : ''
+                });
+                return size
+            }
+            function insertIntoLinkSet(linkArray, newLink, maxVal){
+                var size = linkArray.length;
+                for(var i = 0; i < size; i++){
+                    var l = linkArray[i];
+                    if((l.source == newLink.source && l.target == newLink.target) 
+                        || (l.target == newLink.source && l.source == newLink.target) )
+                        return false;
+                }
+                linkArray.push(newLink);
+                return true;
+            }
+            
+            function outputArtistNames(artistArr){
+                for(var i = 0; i < artistArr.length; i++)
+                    $('#output').append(artistArr[i].name + "<br />");
+            }
+            function setInfo(msg, type){
+                var infoBox = $('#info').removeClass();
+                switch(type){
+                    case 'error':
+                        infoBox.addClass('error');
+                    case 'warning':
+                        infoBox.addClass('warning');
+                    default:
+                        infoBox.addClass('info');
+                }
+                infoBox.text(msg);
+                
+            }
+
+        </script>
+    </body>
+</html>
