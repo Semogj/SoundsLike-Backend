@@ -1,17 +1,8 @@
 function create_force_visualization(pageElemSelector, config){
     //create an object to return that will hold the layout, properties and the visualization
-    var o = {
-        width : getProperty(config, "width", 960),
-        height : getProperty(config, "height", 500),
-        gravity : getProperty(config, "gravity", 0.05),
-        charge : getProperty(config, "charge", -100),
-        radius : getProperty(config, "radius", 6),
-        defaultLinkDistance : getProperty(config, "defaultLinkDistance", 30),
-        minLinkDistance: getProperty(config, "minLinkDistance", 10),
-        maxLinkDistance: getProperty(config, "maxLinkDistance", 60),
-        bordersLimit : getProperty(config, "bordersLimit", true), 
-        fill : d3.scale.category20()
-    };
+    var o = {};
+    processConfig(o, config);
+    
     //set up the layout (the physics context)
     o.layout = d3.layout.force()
     .gravity(o.gravity)
@@ -46,10 +37,49 @@ function create_force_visualization(pageElemSelector, config){
     //physics context = layout (o.layout)
     
     //maping some functions
-    o.start = o.layout.start;
-    o.stop = o.layout.stop;
-    o.tick = o.layout.tick;
+    o.start = function(){
+        o.layout.start();
+        return o;
+    }
+    o.stop = function(){
+        o.layout.stop();
+        return o;
+    }
+    
+    o.tick = o.stop = function(){
+        o.layout.tick();
+        return o;
+    }
+    /**
+     * Similar to o.stop(); o.tick(); o.start();
+     */
+    o.update = function(){
+        o.layout.start();
+        o.layout.tick();
+        o.layout.start();
+        return o;
+    }
+    o.updateConfig = function(){
+        
+    }
     return o;
+    
+    function processConfig(o, config){
+        o.width = getProperty(config, "width", 960);
+        o.height = getProperty(config, "height", 500);
+        o.gravity = getProperty(config, "gravity", 0.05);
+        o.charge = getProperty(config, "charge", -100);
+        o.radius = getProperty(config, "radius", 6);
+        o.defaultLinkDistance = getProperty(config, "defaultLinkDistance", 30);
+        o.minLinkDistance = getProperty(config, "minLinkDistance", 10);
+        o.maxLinkDistance = getProperty(config, "maxLinkDistance", 60);
+        o.bordersLimit = getProperty(config, "bordersLimit", true);
+        o.fill = d3.scale.category20();
+        o.zoom = getProperty(config, "zoom", 1);
+        o.minZoom = getProperty(config, "zoom", 0.0625); //-4x
+        o.maxZoom = getProperty(config, "maxZoom", 5); //5x
+        o.initialZoom = getProperty(config, "zoom", o.zoom);
+    }
 }
 
             
@@ -124,7 +154,37 @@ function init_visualization(graphObj, nodes, links){
     //        .on('drag', dragMove)
     //        .on('dragend', dragEnd) 
     //    );
-    .call(o.layout.drag);
+    .call(o.layout.drag)
+    .call(d3.behavior.zoom().on("zoom", function(){
+        //Zoom work in progress
+        /*
+        var translatePos = d3.event.translate;
+        var value = o.zoom;
+ 
+        //detect the mousewheel event, then subtract/add a constant to the zoom level and transform it
+        if (d3.event.sourceEvent.type=='mousewheel' || d3.event.sourceEvent.type=='DOMMouseScroll'){
+            if (d3.event.sourceEvent.wheelDelta){
+                if (d3.event.sourceEvent.wheelDelta > 0){
+                    value = value + 0.1;
+                }else{
+                    value = value - 0.1;
+                }
+            }else{
+                if (d3.event.sourceEvent.detail > 0){
+                    value = value + 0.1;
+                }else{
+                    value = value - 0.1;
+                }
+            }
+            o.zoom = value;
+            var transformStr = "translate(" +  (translatePos[0] + ((o.width - (o.width * o.initialZoom))/2)) + ',' + (translatePos[1] + ((o.height - (o.height * o.initialZoom))/2)) + ")scale(" + value*o.initialZoom + ")";
+            o.canvas.select("div.node").style("transform", transformStr); 
+            o.canvas.select("div.link").style("transform", transformStr); 
+            //o.update();
+        }
+        */
+        //transformVis(d3.event.translate, value);
+    }));
     
     //tell the physics how to update and to start
     o.layout
@@ -203,6 +263,7 @@ function init_visualization(graphObj, nodes, links){
         .style('width', node.radius * 2 + "px")
         .style('height', node.radius * 2 + "px")
         .style('border-radius', node.radius + "px");
+        
     }
     function cleanupNodes(nodeArr){
         var size = nodeArr.length;

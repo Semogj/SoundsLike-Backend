@@ -61,12 +61,19 @@
                 border: 2px solid;
                 position: relative;
                 overflow: hidden;
-
+                width: 1024px;
+                height: 580px;
                 -webkit-user-select: none;
                 -khtml-user-select: none;
                 -moz-user-select: none;
                 -o-user-select: none;
                 user-select: none;
+
+            }
+            #chartControls{
+                padding: 2px;
+                margin: 3px;
+
             }
             div.link {
                 position: absolute;
@@ -79,7 +86,15 @@
                 -o-transform-origin: 0 0;
                 transform-origin: 0 0;
             }
-
+            .float-left{
+                float: left;
+            }
+            #output{
+                padding: 5px;
+            }
+            .float-fix{
+                clear: both;
+            }
         </style>
     </head>
     <body>
@@ -89,17 +104,29 @@
                 Number of Top Artists: <input id="topArtistsNumber" type="number" min="1" max="100" value="10" />             
             </div>
             <div>
-                Min Similarity Value (0 - 100): <input id="minSimilarity" type="range" min="0" max="100" value ="40" /> <span id="simVal">40</span>
-                Max Similar Neighbors: <input id="maxNeighbors" type="number" min="1" max="100" value="20" />
-                <input id="btLastfmUsername" type="button" value="Fetch Info" />
+                Min Similarity Value (0 - 100): <input id="minSimilarity" type="range" min="0" max="100" value ="40" disabled=""/> <span id="simVal">40</span>
+                Max Similar Neighbors: <input id="maxNeighbors" type="number" min="1" max="100" value="20" disabled="" />
+                <input id="btLastfmUsername" type="button" value="Fetch data from Last.fm"/> |
                 <input id="btTest1" type="button" value="Use Test Data 1" /> 
                 <input id="btTest2" type="button" value="Use Test Data 2" />  
                 <input id="btTest3" type="button" value="Use Test Data 3" />  
             </div>
             <div id="info"></div>
         </div>
-        <div id="chart"></div>
-        <div id="output"></div>
+        <div>
+            <div id="chart"  class="float-left"></div>
+            <div id="chartControls"  class="float-left">
+                <input id="btBordersLimit" type="button" value="Borders Limit: Off" />
+            </div>
+            <div class="float-fix"></div>
+        </div>
+        <div id="output">
+            <p>As arestas representam relações. Os valores das relações são supostos serem normalizadores entre 0 e 1, sendo que o valor 1
+                representa uma similaridade forte e 0 a "ausencia" de relação. As cores das arestas representam também a similaridade, sendo 
+                utilizadas cores quentes para relações fortes e cores frias para relações fracas.</p>
+            <p>O gráfico do lasfm apresenta a lista de artistas mais ouvidos pelo utilizador especificado (nós a vermelho) e os artistas
+                relacionados (nós a azul). As relações representam similaridade entre artistas.</p>
+        </div>
         <script type="text/javascript">
             var lastfmCache = new LastFMCache();
             var lastfm = new LastFM({
@@ -116,6 +143,18 @@
                     fetchInfoEvent();
                 }
             });
+            var bordersLimit = false;
+            var graphObj = null;
+            $('#btBordersLimit').click(function(e){
+                bordersLimit = !bordersLimit;
+                $('#btBordersLimit').val("Border Limit : " + (bordersLimit ? "On" : "Off"));
+                if(isset(graphObj)){
+                    graphObj.stop();
+                    graphObj.bordersLimit = bordersLimit;
+                    graphObj.tick();
+                    graphObj.start();
+                }
+            })
             $('#btTest1').click(testData1Event);
             $('#btTest2').click(testData2Event);
             $('#btTest3').click(testData3Event);
@@ -125,15 +164,17 @@
                 matchMinimum: 0.4
             }
             function testData1Event(event){
-                updateVisualization([{name:'A'}, {name:'B'},{name:'C'}, {name:'D'}, {name:'E'} ,{name:'F'}, {name:'G'}, {name:'H'},{name:'I'},{name:'J'}],
+                graphObj = updateVisualization([{name:'A'}, {name:'B'},{name:'C'}, {name:'D'}, {name:'E'} ,{name:'F'}, {name:'G'}, {name:'H'},{name:'I'},{name:'J'}],
                 [{source:0, target:1, value:1},{source:0, target:2, value:1},{source:0, target:3, value:0.1},
                     {source:0, target:4, value:0},{source:0, target:5, value:0.6},{source:0, target:6, value:0.5},
-                    {source:0, target:7, value:0.5},{source:0, target:8, value:0.5},{source:0, target:9, value:0.5}]);
+                    {source:0, target:7, value:0.5},{source:0, target:8, value:0.5},{source:0, target:9, value:0.5}],
+                {width: 1024, height: 540, gravity: 0.08, radius: 20, charge:-100, defaultLinkDistance: 50, 
+                    minLinkDistance:12, maxLinkDistance:130, bordersLimit:bordersLimit});
             }
             
             function testData2Event(event){
                 var nodes = [
-                   {name: "Sound Event 1", locked:true, nodeGroup:0, bordersLimit:true}, //0
+                    {name: "Sound Event 1", locked:true, nodeGroup:0, bordersLimit:true}, //0
                     {name: "Similar Event: 1.0"}, //1
                     {name: "Similar Event: 1.0"}, //2
                     {name: "Similar Event: 1.0"}, //3
@@ -183,9 +224,9 @@
                     {source:0, target:22, value:0.8},
                     {source:0, target:23, value:0.8},
                 ];
-                var config = {width: 1024, height: 600, gravity: 0.01, radius: 20, charge:-100, 
-                    defaultLinkDistance: 50, minLinkDistance:10, maxLinkDistance:160};
-                updateVisualization(nodes, links, config);
+                var config = {width: 1024, height: 540, gravity: 0.01, radius: 20, charge:-100, 
+                    defaultLinkDistance: 50, minLinkDistance:10, maxLinkDistance:160, bordersLimit:bordersLimit};
+                graphObj = updateVisualization(nodes, links, config);
             }
             function testData3Event(event){
                 var nodes = [
@@ -254,9 +295,9 @@
                     {source:0, target:29, value:0, lengthMult:bigNodeLinkMult},
                     {source:0, target:30, value:0, lengthMult:bigNodeLinkMult},
                 ];
-                var config = {width: 1024, height: 600, gravity: 0.035, radius: 20, charge:-110, 
-                    defaultLinkDistance: 50, minLinkDistance:10, maxLinkDistance:160, bordersLimit:false};
-                updateVisualization(nodes, links, config);
+                var config = {width: 1024, height: 540, gravity: 0.035, radius: 20, charge:-110, 
+                    defaultLinkDistance: 50, minLinkDistance:10, maxLinkDistance:160, bordersLimit:bordersLimit};
+                graphObj = updateVisualization(nodes, links, config);
             }
        
             function updateVisualization(nodes, links, config){
@@ -265,10 +306,11 @@
                 console.log(links);
                 $('#btLastfmUsername').removeAttr('disabled');
                 
-                config = issetDefault(config, {width: 1024, height: 600, gravity: 0.08, radius: 20, charge:-100, 
+                config = issetDefault(config, {width: 1024, height: 540, gravity: 0.08, radius: 20, charge:-100, 
                     defaultLinkDistance: 50, minLinkDistance:12, maxLinkDistance:130});
                 var graphObj = create_force_visualization("#chart", config);
                 init_visualization(graphObj, nodes, links);
+                return graphObj;
             }
             
             function setInfo(msg, type){
