@@ -116,7 +116,16 @@
         <div>
             <div id="chart"  class="float-left"></div>
             <div id="chartControls"  class="float-left">
-                <input id="btBordersLimit" type="button" value="Borders Limit: Off" />
+                <div><h2>Graph controls</h2></div>
+                <div>Behaviour modifiers:<br />
+                    <input id="btBordersLimit" type="button" value="Borders Limit: Off" />
+                    <hr />
+                </div>
+                <div>Scale / Zoom:<br />
+                    <input id="btZoomOut" type="button" value="Zoom Out [+]" />
+                    <input id="btZoomIn" type="button" value="Zoom In [-]" />
+                    <hr />
+                </div>
             </div>
             <div class="float-fix"></div>
         </div>
@@ -156,6 +165,14 @@
                     graphObj.start();
                 }
             })
+            $('#btZoomIn').click(function(e){
+                graphObj.changeZoom([graphObj.width/2, graphObj.height/2], 0.1);
+                
+            });
+            $('#btZoomOut').click(function(e){
+                graphObj.changeZoom([graphObj.width/2, graphObj.height/2], -0.1);
+            });
+            
             $('#btTest1').click(testData1Event);
             $('#btTest2').click(testData2Event);
             $('#btTest3').click(testData3Event);
@@ -231,7 +248,7 @@
             }
             function testData3Event(event){
                 var nodes = [
-                    {name: "Sound Event 1", locked:true, nodeGroup:0, bordersLimit:true}, //0
+                    {name: "Sound Event 1", locked:true, nodeGroup:2, bordersLimit:true}, //0
                     {name: "Similar Event: 1.0"}, //1
                     {name: "Similar Event: 1.0"}, //2
                     {name: "Similar Event: 1.0"}, //3

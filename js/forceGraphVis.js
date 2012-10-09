@@ -59,8 +59,15 @@ function create_force_visualization(pageElemSelector, config){
         o.layout.start();
         return o;
     }
-    o.updateConfig = function(){
-        
+    o.changeZoom = function (position, value){
+        o.zoom = value;
+        var transformStr = "translate(" +  (position[0] + ((o.width - (o.width * o.initialZoom))/2)) + ',' + (position[1] + ((o.height - (o.height * o.initialZoom))/2)) + ")scale(" + value*o.initialZoom + ")";
+        o.canvas.style("-webkit-transform", transformStr)
+        .style("-moz-transform", transformStr)
+        .style("-ms-transform", transformStr)
+        .style("-o-transform", transformStr)
+        .style("transform", transformStr);
+        return o;
     }
     return o;
     
@@ -75,10 +82,10 @@ function create_force_visualization(pageElemSelector, config){
         o.maxLinkDistance = getProperty(config, "maxLinkDistance", 60);
         o.bordersLimit = getProperty(config, "bordersLimit", true);
         o.fill = d3.scale.category20();
-        o.zoom = getProperty(config, "zoom", 1);
-        o.minZoom = getProperty(config, "zoom", 0.0625); //-4x
+        o.pzoom  = o.zoom = getProperty(config, "zoom", 1);
+        o.minZoom = getProperty(config, "minZoom", 0.0625); //-4x
         o.maxZoom = getProperty(config, "maxZoom", 5); //5x
-        o.initialZoom = getProperty(config, "zoom", o.zoom);
+        o.initialZoom = getProperty(config, "initialZoom", o.zoom);
     }
 }
 
@@ -157,7 +164,7 @@ function init_visualization(graphObj, nodes, links){
     .call(o.layout.drag)
     .call(d3.behavior.zoom().on("zoom", function(){
         //Zoom work in progress
-        /*
+        
         var translatePos = d3.event.translate;
         var value = o.zoom;
  
@@ -176,14 +183,12 @@ function init_visualization(graphObj, nodes, links){
                     value = value - 0.1;
                 }
             }
-            o.zoom = value;
-            var transformStr = "translate(" +  (translatePos[0] + ((o.width - (o.width * o.initialZoom))/2)) + ',' + (translatePos[1] + ((o.height - (o.height * o.initialZoom))/2)) + ")scale(" + value*o.initialZoom + ")";
-            o.canvas.select("div.node").style("transform", transformStr); 
-            o.canvas.select("div.link").style("transform", transformStr); 
-            //o.update();
+            o.changeZoom(translatePos, value);
+            
+        //o.update();
         }
-        */
-        //transformVis(d3.event.translate, value);
+        
+    //transformVis(d3.event.translate, value);
     }));
     
     //tell the physics how to update and to start
