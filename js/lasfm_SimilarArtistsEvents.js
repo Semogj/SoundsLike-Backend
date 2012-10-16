@@ -1,4 +1,4 @@
-function lastfm_fetchInfoEvent(event){
+function lastfm_fetchInfoEvent(event,config){
                 
     var button = $('#btLastfmUsername').attr('disabled', 'true');
     var username = $.trim($('#txtLastfmUsername').val());
@@ -11,12 +11,13 @@ function lastfm_fetchInfoEvent(event){
     var nTopArtists = $('#topArtistsNumber').val();
     var minSimilarityVal = $('#minSimilarity').val() / 100;
     var maxNeighbors = $('#maxNeighbors').val();
+    var period = $('#topArtistsPeriod').val();
                 
     setInfo("Extracting " + username + " top artists...");
     try{
         lastfm.user.getTopArtists({
             user: username, 
-            period:'overall', 
+            period: period, 
             limit: nTopArtists
         }, 
 
@@ -82,7 +83,7 @@ function lastfm_fetchInfoEvent(event){
                         source: taIndex, 
                         target: index, 
                         value: similarArtistArr[i].match
-                        });
+                    });
                 }
             }
             //recursive call for getting top artist similar
@@ -95,16 +96,16 @@ function lastfm_fetchInfoEvent(event){
                     artist: currentTaArtist.name , 
                     mbid: currentTaArtist.mbid, 
                     limit: settings.defaultSimilarArtists
-                    }, 
+                }, 
 
-                    {
+                {
                     success: processSimilarArtists, 
                     error: lastfmError
                 }); 
             }else{
                 cacheStore(cacheKey + "_nodes", artistsArr);
                 cacheStore(cacheKey + "_links", relationsArray);
-                updateVisualization(artistsArr, relationsArray);
+                updateVisualization(artistsArr, relationsArray,config);
             }      
         }
     }

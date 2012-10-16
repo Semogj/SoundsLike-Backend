@@ -47,7 +47,7 @@
             }
             div.node .text{
                 width: 100%;
-                font-size: 10px;
+                font-size: 9px;
                 text-align: center;
                 display: table-cell;
                 vertical-align: middle;
@@ -56,6 +56,7 @@
             div.node.group_0{
                 border-color: #cc0000 !important; /*dark red tone*/
                 background-color: #ff3333 !important; /*red tone*/
+                z-index: 1000 !important;
             }
             #chart{
                 border: 2px solid;
@@ -102,11 +103,20 @@
         <div>
             <div>Last.fm Username:<input type="text" id="txtLastfmUsername"  value="semogj" />
                 Number of Top Artists: <input id="topArtistsNumber" type="number" min="3" max="100" value="10" />             
+                Period: <select id="topArtistsPeriod">
+                            <option value="overall">Overall Artists</option>           
+                            <option value="7day">Last 7 days</option>           
+                            <option value="1month">Last month</option>           
+                            <option value="3month">Last 3 months</option>           
+                            <option value="6month">Last 6 months</option>    
+                            <option value="12month">Last 12 months</option>    
+                        </select>
+                <input id="btLastfmUsername" type="button" value="Fetch data from Last.fm"/>
             </div>
             <div>
-                Min Similarity Value (0 - 100): <input id="minSimilarity" type="range" min="0" max="100" value ="40" disabled=""/> <span id="simVal">0.40</span>
-                Max Similar Neighbors: <input id="maxNeighbors" type="number" min="1" max="100" value="20" disabled="" />
-                <input id="btLastfmUsername" type="button" value="Fetch data from Last.fm"/> |
+                Last.fm minimum similarity value (0 - 100): <input id="minSimilarity" type="range" min="0" max="100" value ="40" disabled=""/> <span id="simVal">0.40</span>
+                | Maximum similar neighbors: <input id="maxNeighbors" type="number" min="1" max="100" value="20" disabled="" />
+                 ||
                 <input id="btTest1" type="button" value="Use Test Data 1" /> 
                 <input id="btTest2" type="button" value="Use Test Data 2" />  
                 <input id="btTest3" type="button" value="Use Test Data 3" />  
@@ -139,6 +149,8 @@
         </div>
         <script type="text/javascript">
             var lastfmCache = new LastFMCache();
+            var bordersLimit = false;
+            var graphObj = null;
             var lastfm = new LastFM({
                 apiKey: '58c14554d4b5a87e1486bdff11b44e11',
                 apiSecret: '0d3d27ec57beea0bbaa341f45cce9dfb',
@@ -146,15 +158,19 @@
             $('#minSimilarity').change(function(e){
                 $('simVal').text($('minSimilarity').val());
             })
-            $('#btLastfmUsername').click(lastfm_fetchInfoEvent);
+            $('#btLastfmUsername').click(function(e){
+                var config = {width: 1024, height: 540, gravity: 0.05, radius: 20, charge:-50, 
+                    defaultLinkDistance: 50, minLinkDistance:20, maxLinkDistance:80, radius:20, bordersLimit:bordersLimit};
+                lastfm_fetchInfoEvent(e, config);
+            }
+            );
             $('#txtLastfmUsername').keydown(function(e) {
                 if(e.keyCode == 13) {
                     e.preventDefault();
                     fetchInfoEvent();
                 }
             });
-            var bordersLimit = false;
-            var graphObj = null;
+            
             $('#btBordersLimit').click(function(e){
                 bordersLimit = !bordersLimit;
                 $('#btBordersLimit').val("Border Limit : " + (bordersLimit ? "On" : "Off"));

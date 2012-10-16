@@ -136,7 +136,7 @@ function init_visualization(graphObj, nodes, links){
         return ret;
     })
     .html(function(node){
-        return '<div class="text">' + node.name + '</div>';
+        return '<div class="text" >' + node.name + '</div>';
     })
     .style("width", function(d) { 
         return (isset(d.radius) ? d.radius*2 : o.radius*2) + "px"; 
