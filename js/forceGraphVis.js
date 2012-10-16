@@ -86,6 +86,7 @@ function create_force_visualization(pageElemSelector, config){
         o.minZoom = getProperty(config, "minZoom", 0.0625); //-4x
         o.maxZoom = getProperty(config, "maxZoom", 5); //5x
         o.initialZoom = getProperty(config, "initialZoom", o.zoom);
+    //        o.nodeZindex = getProperty(config, "nodeZindex", 500);
     }
 }
 
@@ -154,8 +155,12 @@ function init_visualization(graphObj, nodes, links){
         var nodeGroup = issetDefault(d.nodeGroup, 1);
         return d3.rgb(o.fill(nodeGroup)).darker();
     })
-    .on('mouseover', onMouseOver)
-    .on('mouseout', onMouseOut)
+    //    .style('z-index', function(d){
+    //        return issetDefault(d.zindex, o.nodeZindex);
+    //    })
+    .on('click', onNodeClick)
+    .on('mouseover', onNodeMouseOver)
+    .on('mouseout', onNodeMouseOut)
     //    .call(d3.behavior.drag()
     //        .on('dragstart', dragStart)
     //        .on('drag', dragMove)
@@ -257,18 +262,44 @@ function init_visualization(graphObj, nodes, links){
         o.layout.start()
     }
     
-    function onMouseOver(node){
-        d3.select(this).select('.node').transition().duration(750)
-        .style('width', "40px")
-        .style('height', "40px")
-        .style('border-radius', "20px");
+    function onNodeMouseOver(node, index){
+        console.log("MouseOver event over node[" + index + "] \"" +  node.name + "\"");
+        var newRadius = node.radius * 1.5;
+        var difRadius = (newRadius - node.radius) * -1;
+        
+        var selector = d3.select(this);
+        selector.style('z-index', Math.round(selector.style('z-index') * 2))
+        .transition().duration(250)
+        .style('margin-top', difRadius + "px")
+        .style('margin-left', difRadius + "px")
+        .style('width', newRadius * 2 + "px")
+        .style('height', newRadius * 2  + "px")
+        .style('border-radius', newRadius + "px");
+        
+        //o.layout.resume();
     }
-    function onMouseOut(node){
-        d3.select(this).select('.node').transition().duration(750)
+    function onNodeMouseOut(node, index){
+        console.log("MouseOut event over node[" + index + "] \"" +  node.name + "\"");
+        
+        var selector = d3.select(this);
+        
+        selector.select('.text').text(node.name);
+        
+        selector.style('z-index', Math.round(selector.style('z-index') / 2))
+        .transition().duration(250)
+        .style('margin-top',"0px")
+        .style('margin-left', "0px")
         .style('width', node.radius * 2 + "px")
         .style('height', node.radius * 2 + "px")
         .style('border-radius', node.radius + "px");
-        
+        o.layout.resume();
+    }
+    function onNodeClick(node, index){
+        console.log("MouseClick event over node[" + index + "] \"" +  node.name + "\"");
+        var selector = d3.select(this).select('.text');
+        selector.transition().duration(500).text('CLICK!').each('end', function(){
+            selector.text(node.name);
+        });
     }
     function cleanupNodes(nodeArr){
         var size = nodeArr.length;
@@ -287,6 +318,10 @@ function init_visualization(graphObj, nodes, links){
             }
             nodeArr[i].bordersLimit = issetDefault(nodeArr[i].bordersLimit, false);
         }
+    }
+    
+    function alertBox(text){
+        
     }
 }
 

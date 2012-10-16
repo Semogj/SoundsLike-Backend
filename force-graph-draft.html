@@ -79,7 +79,7 @@
                 position: absolute;
                 border: 1px solid #5F5F5F;
                 border-style: solid;
-                height: 4px;
+                height: 2px;
                 -webkit-transform-origin: 0 0;
                 -moz-transform-origin: 0 0;
                 -ms-transform-origin: 0 0;
@@ -104,7 +104,7 @@
                 Number of Top Artists: <input id="topArtistsNumber" type="number" min="3" max="100" value="10" />             
             </div>
             <div>
-                Min Similarity Value (0 - 100): <input id="minSimilarity" type="range" min="0" max="100" value ="40" disabled=""/> <span id="simVal">40</span>
+                Min Similarity Value (0 - 100): <input id="minSimilarity" type="range" min="0" max="100" value ="40" disabled=""/> <span id="simVal">0.40</span>
                 Max Similar Neighbors: <input id="maxNeighbors" type="number" min="1" max="100" value="20" disabled="" />
                 <input id="btLastfmUsername" type="button" value="Fetch data from Last.fm"/> |
                 <input id="btTest1" type="button" value="Use Test Data 1" /> 
@@ -122,8 +122,8 @@
                     <hr />
                 </div>
                 <div>Scale / Zoom:<br />
-                    <input id="btZoomOut" type="button" value="Zoom Out [+]" />
-                    <input id="btZoomIn" type="button" value="Zoom In [-]" />
+                    <input id="btZoomOut" type="button" value="Zoom Out [+]" disabled="" />
+                    <input id="btZoomIn" type="button" value="Zoom In [-]" disabled="" />
                     <hr />
                 </div>
             </div>
@@ -242,8 +242,8 @@
                     {source:0, target:22, value:0.8},
                     {source:0, target:23, value:0.8},
                 ];
-                var config = {width: 1024, height: 540, gravity: 0.01, radius: 20, charge:-100, 
-                    defaultLinkDistance: 50, minLinkDistance:10, maxLinkDistance:160, bordersLimit:bordersLimit};
+                var config = {width: 1024, height: 540, gravity: 0.05, radius: 20, charge:-100, 
+                    defaultLinkDistance: 50, minLinkDistance:20, maxLinkDistance:200, bordersLimit:bordersLimit};
                 graphObj = updateVisualization(nodes, links, config);
             }
             function testData3Event(event){
@@ -313,8 +313,8 @@
                     {source:0, target:29, value:0, lengthMult:bigNodeLinkMult},
                     {source:0, target:30, value:0, lengthMult:bigNodeLinkMult},
                 ];
-                var config = {width: 1024, height: 540, gravity: 0.035, radius: 20, charge:-110, 
-                    defaultLinkDistance: 50, minLinkDistance:10, maxLinkDistance:160, bordersLimit:bordersLimit};
+                var config = {width: 1024, height: 540, gravity: 0.05, radius: 20, charge:-110, 
+                    defaultLinkDistance: 50, minLinkDistance:20, maxLinkDistance:200, bordersLimit:bordersLimit};
                 graphObj = updateVisualization(nodes, links, config);
             }
        
@@ -325,7 +325,7 @@
                 $('#btLastfmUsername').removeAttr('disabled');
                 
                 config = issetDefault(config, {width: 1024, height: 540, gravity: 0.08, radius: 20, charge:-100, 
-                    defaultLinkDistance: 50, minLinkDistance:12, maxLinkDistance:130});
+                    defaultLinkDistance: 50, minLinkDistance:20, maxLinkDistance:200});
                 var graphObj = create_force_visualization("#chart", config);
                 init_visualization(graphObj, nodes, links);
                 return graphObj;
