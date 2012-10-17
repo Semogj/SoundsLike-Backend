@@ -46,7 +46,7 @@ function create_force_visualization(pageElemSelector, config){
         return o;
     }
     
-    o.tick = o.stop = function(){
+    o.tick = function(){
         o.layout.tick();
         return o;
     }
@@ -69,6 +69,153 @@ function create_force_visualization(pageElemSelector, config){
         .style("transform", transformStr);
         return o;
     }
+    o.onTick = function() {
+        function transform(d) {
+            return "rotate(" + Math.atan2(
+                (d.target.y + d.target.radius) - (d.source.y+ d.source.radius), 
+                (d.target.x + d.target.radius) - (d.source.x + d.source.radius)
+                ) * 180 / Math.PI + "deg)";
+        }
+        //calculates the link lenght. For l
+        function length(d) 
+        {
+            var dx = (d.target.x + d.target.radius) - (d.source.x + d.source.radius),
+            dy = (d.target.y + d.target.radius) - (d.source.y + d.source.radius);
+            return Math.sqrt(dx * dx + dy * dy) + "px";
+        }
+        
+        o.visNodes.style("left", function(d) {
+            var pos = 0.0;
+            if(o.bordersLimit || d.bordersLimit)
+                pos = (d.x = Math.max(0, Math.min(o.width - d.radius * 2, d.x)));  //x bondaries limit
+            else
+                pos = d.x;
+            return  pos + "px";
+        })
+        .style("top", function(d) {
+            var pos = 0.0;
+            if(o.bordersLimit || d.bordersLimit) 
+                pos = (d.y = Math.max(0, Math.min(o.height - d.radius * 2, d.y))); //y bondaries limit
+            else
+                pos = d.y;
+            return  pos + "px";
+        });
+
+        o.visLinks.style("left", function(d) {
+            return (d.source.x + d.source.radius)  + "px"; 
+        })
+        .style("top", function(d) {
+            return (d.source.y + d.source.radius)  + "px"; 
+        })
+        .style("width", length)
+        .style("-webkit-transform", transform)
+        .style("-moz-transform", transform)
+        .style("-ms-transform", transform)
+        .style("-o-transform", transform)
+        .style("transform", transform);
+    };
+    
+    o.onNodeMouseOver = function(node, index){
+        console.log("MouseOver event over node[" + index + "] \"" +  node.name + "\"");
+        var newRadius = node.radius * 1.5;
+        var difRadius = (newRadius - node.radius) * -1;
+        
+        var selector = d3.select(this);
+        selector.style('z-index', Math.round(selector.style('z-index') * 2))
+        .transition().duration(250)
+        .style('margin-top', difRadius + "px")
+        .style('margin-left', difRadius + "px")
+        .style('width', newRadius * 2 + "px")
+        .style('height', newRadius * 2  + "px")
+        .style('border-radius', newRadius + "px");
+        
+    //o.layout.resume();
+    }
+    o.onNodeMouseOut = function(node, index){
+        console.log("MouseOut event over node[" + index + "] \"" +  node.name + "\"");
+        
+        var selector = d3.select(this);
+        
+        selector.select('.text').text(node.name);
+        
+        selector.style('z-index', Math.round(selector.style('z-index') / 2))
+        .transition().duration(250)
+        .style('margin-top',"0px")
+        .style('margin-left', "0px")
+        .style('width', node.radius * 2 + "px")
+        .style('height', node.radius * 2 + "px")
+        .style('border-radius', node.radius + "px");
+        o.layout.resume();
+    }
+    o.onNodeClick = function(node, index){
+        console.log("MouseClick event over node[" + index + "] \"" +  node.name + "\"");
+        var selector = d3.select(this).select('.text');
+        selector.transition().duration(500).text('CLICK!').each('end', function(){
+            selector.text(node.name);
+        });
+    }
+    o.onZoomAction = function(){
+        //Zoom work in progress  
+        var translatePos = d3.event.translate;
+        var value = o.zoom;
+        //detect the mousewheel event, then subtract/add a constant to the zoom level and transform it
+        if (d3.event.sourceEvent.type=='mousewheel' || d3.event.sourceEvent.type=='DOMMouseScroll'){
+            if (d3.event.sourceEvent.wheelDelta){
+                if (d3.event.sourceEvent.wheelDelta > 0){
+                    value = value + 0.1;
+                }else{
+                    value = value - 0.1;
+                }
+            }else{
+                if (d3.event.sourceEvent.detail > 0){
+                    value = value + 0.1;
+                }else{
+                    value = value - 0.1;
+                }
+            }
+            o.changeZoom(translatePos, value);     
+        //o.update();
+        } 
+    //transformVis(d3.event.translate, value);
+    }
+    
+    o.onDragStart = function(d, i){
+    //o.layout.stop()
+    }
+    o.onDragMove = function(d, i) {
+    /*
+        d.px += d3.event.dx;
+        d.py += d3.event.dy;
+        d.x += d3.event.dx;
+        d.y += d3.event.dy; 
+        tick(); // this is the key to make it work together with updating both px,py,x,y on d !
+        */
+    }
+    o.onDragEnd = function(d, i){
+    //o.layout.start()
+    }
+    //the default function
+    o.defaultCleanupNodes = function (nodeArr){
+        var size = nodeArr.length;
+        for(var i = 0; i < size; i++)
+        {
+            if(issetDefault(nodeArr[i].nodeGroup, -1) == 0){
+                nodeArr[i].radius = o.radius * 1.5;
+            }else
+            if(!isset(nodeArr[i].radius)){ //default radius check
+                nodeArr[i].radius = o.radius;
+            }
+            if(isset(nodeArr[i].radiusMult)){
+                nodeArr[i].radius *= nodeArr[i].radiusMult;
+            }else{
+                nodeArr[i].radiusMult = 1;
+            }
+            nodeArr[i].bordersLimit = issetDefault(nodeArr[i].bordersLimit, false);
+        }
+        o.onCleanupNodes(nodeArr);
+    }
+    o.onCleanupNodes = function(){}; //the substitute function
+    
     return o;
     
     function processConfig(o, config){
@@ -88,6 +235,7 @@ function create_force_visualization(pageElemSelector, config){
         o.initialZoom = getProperty(config, "initialZoom", o.zoom);
     //        o.nodeZindex = getProperty(config, "nodeZindex", 500);
     }
+    
 }
 
             
@@ -123,8 +271,8 @@ function init_visualization(graphObj, nodes, links){
         
     })
     
-                
-    cleanupNodes(nodes);
+    //call both cleanup function (the default and the custom if available)           
+    o.defaultCleanupNodes(nodes);
     //add nodes to the visualization
     o.visNodes =  o.canvas.selectAll("div.node")
     .data(nodes)
@@ -158,170 +306,22 @@ function init_visualization(graphObj, nodes, links){
     //    .style('z-index', function(d){
     //        return issetDefault(d.zindex, o.nodeZindex);
     //    })
-    .on('click', onNodeClick)
-    .on('mouseover', onNodeMouseOver)
-    .on('mouseout', onNodeMouseOut)
-    //    .call(d3.behavior.drag()
-    //        .on('dragstart', dragStart)
-    //        .on('drag', dragMove)
-    //        .on('dragend', dragEnd) 
-    //    );
+    .on('click', o.onNodeClick)
+    .on('mouseover', o.onNodeMouseOver)
+    .on('mouseout', o.onNodeMouseOut)
+    .call(d3.behavior.drag()
+        .on('dragstart', o.onDragStart)
+        .on('drag', o.onDragMove)
+        .on('dragend', o.onDragEnd) 
+        )
     .call(o.layout.drag)
-    .call(d3.behavior.zoom().on("zoom", function(){
-        //Zoom work in progress
-        
-        var translatePos = d3.event.translate;
-        var value = o.zoom;
- 
-        //detect the mousewheel event, then subtract/add a constant to the zoom level and transform it
-        if (d3.event.sourceEvent.type=='mousewheel' || d3.event.sourceEvent.type=='DOMMouseScroll'){
-            if (d3.event.sourceEvent.wheelDelta){
-                if (d3.event.sourceEvent.wheelDelta > 0){
-                    value = value + 0.1;
-                }else{
-                    value = value - 0.1;
-                }
-            }else{
-                if (d3.event.sourceEvent.detail > 0){
-                    value = value + 0.1;
-                }else{
-                    value = value - 0.1;
-                }
-            }
-            o.changeZoom(translatePos, value);
-            
-        //o.update();
-        }
-        
-    //transformVis(d3.event.translate, value);
-    }));
-    
+    .call(d3.behavior.zoom().on("zoom", o.onZoomAction));
+
     //tell the physics how to update and to start
     o.layout
     .nodes(nodes)
     .links(links)
-    .on("tick", tick)
+    .on("tick", o.onTick)
     .start();
-    
-    function tick() {
-        o.visNodes.style("left", function(d) {
-            var pos = 0.0;
-            if(o.bordersLimit || d.bordersLimit)
-                pos = (d.x = Math.max(0, Math.min(o.width - d.radius * 2, d.x)));  //x bondaries limit
-            else
-                pos = d.x;
-            return  pos + "px";
-        })
-        .style("top", function(d) {
-            var pos = 0.0;
-            if(o.bordersLimit || d.bordersLimit) 
-                pos = (d.y = Math.max(0, Math.min(o.height - d.radius * 2, d.y))); //y bondaries limit
-            else
-                pos = d.y;
-            return  pos + "px";
-        });
-
-        o.visLinks.style("left", function(d) {
-            return (d.source.x + d.source.radius)  + "px"; 
-        })
-        .style("top", function(d) {
-            return (d.source.y + d.source.radius)  + "px"; 
-        })
-        .style("width", length)
-        .style("-webkit-transform", transform)
-        .style("-moz-transform", transform)
-        .style("-ms-transform", transform)
-        .style("-o-transform", transform)
-        .style("transform", transform);
-    };
-
-    function transform(d) {
-        return "rotate(" + Math.atan2(
-            (d.target.y + d.target.radius) - (d.source.y+ d.source.radius), 
-            (d.target.x + d.target.radius) - (d.source.x + d.source.radius)
-            ) * 180 / Math.PI + "deg)";
-    }
-
-    function length(d) 
-    {
-        var dx = (d.target.x + d.target.radius) - (d.source.x + d.source.radius),
-        dy = (d.target.y + d.target.radius) - (d.source.y + d.source.radius);
-        return Math.sqrt(dx * dx + dy * dy) + "px";
-    }
-    function dragStart(d, i){
-        o.layout.stop()
-    }
-    function dragMove(d, i) {
-        d.px += d3.event.dx;
-        d.py += d3.event.dy;
-        d.x += d3.event.dx;
-        d.y += d3.event.dy; 
-        tick(); // this is the key to make it work together with updating both px,py,x,y on d !
-    }
-    function dragEnd(d, i){
-        o.layout.start()
-    }
-    
-    function onNodeMouseOver(node, index){
-        console.log("MouseOver event over node[" + index + "] \"" +  node.name + "\"");
-        var newRadius = node.radius * 1.5;
-        var difRadius = (newRadius - node.radius) * -1;
-        
-        var selector = d3.select(this);
-        selector.style('z-index', Math.round(selector.style('z-index') * 2))
-        .transition().duration(250)
-        .style('margin-top', difRadius + "px")
-        .style('margin-left', difRadius + "px")
-        .style('width', newRadius * 2 + "px")
-        .style('height', newRadius * 2  + "px")
-        .style('border-radius', newRadius + "px");
-        
-        //o.layout.resume();
-    }
-    function onNodeMouseOut(node, index){
-        console.log("MouseOut event over node[" + index + "] \"" +  node.name + "\"");
-        
-        var selector = d3.select(this);
-        
-        selector.select('.text').text(node.name);
-        
-        selector.style('z-index', Math.round(selector.style('z-index') / 2))
-        .transition().duration(250)
-        .style('margin-top',"0px")
-        .style('margin-left', "0px")
-        .style('width', node.radius * 2 + "px")
-        .style('height', node.radius * 2 + "px")
-        .style('border-radius', node.radius + "px");
-        o.layout.resume();
-    }
-    function onNodeClick(node, index){
-        console.log("MouseClick event over node[" + index + "] \"" +  node.name + "\"");
-        var selector = d3.select(this).select('.text');
-        selector.transition().duration(500).text('CLICK!').each('end', function(){
-            selector.text(node.name);
-        });
-    }
-    function cleanupNodes(nodeArr){
-        var size = nodeArr.length;
-        for(var i = 0; i < size; i++)
-        {
-            if(issetDefault(nodeArr[i].nodeGroup, -1) == 0){
-                nodeArr[i].radius = o.radius * 1.5;
-            }else
-            if(!isset(nodeArr[i].radius)){ //default radius check
-                nodeArr[i].radius = o.radius;
-            }
-            if(isset(nodeArr[i].radiusMult)){
-                nodeArr[i].radius *= nodeArr[i].radiusMult;
-            }else{
-                nodeArr[i].radiusMult = 1;
-            }
-            nodeArr[i].bordersLimit = issetDefault(nodeArr[i].bordersLimit, false);
-        }
-    }
-    
-    function alertBox(text){
-        
-    }
 }
 
