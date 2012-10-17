@@ -38,7 +38,7 @@
             }
             div.node {
                 border: 2px solid #000;
-                border-radius: 6px;
+                border-defaultRadius: 6px;
                 width: 12px;
                 height: 12px;
                 position: absolute;
@@ -159,8 +159,8 @@
                 $('simVal').text($('minSimilarity').val());
             })
             $('#btLastfmUsername').click(function(e){
-                var config = {width: 1024, height: 540, gravity: 0.05, radius: 20, charge:-50, 
-                    defaultLinkDistance: 50, minLinkDistance:20, maxLinkDistance:80, radius:20, bordersLimit:bordersLimit};
+                var config = {width: 1024, height: 540, gravity: 0.05, defaultRadius: 20, charge:-50, 
+                    linkMaximumDistance: 50, linkMinimumDistance:20, linkMaximumDistance:80, defaultRadius:20, bordersLimit:bordersLimit};
                 lastfm_fetchInfoEvent(e, config);
             }
             );
@@ -175,10 +175,8 @@
                 bordersLimit = !bordersLimit;
                 $('#btBordersLimit').val("Border Limit : " + (bordersLimit ? "On" : "Off"));
                 if(isset(graphObj)){
-                    graphObj.stop();
-                    graphObj.bordersLimit = bordersLimit;
-                    graphObj.tick();
-                    graphObj.start();
+                    graphObj.toggleBordersLimit();
+                    
                 }
             })
             $('#btZoomIn').click(function(e){
@@ -202,8 +200,8 @@
                 [{source:0, target:1, value:1},{source:0, target:2, value:1},{source:0, target:3, value:0.1},
                     {source:0, target:4, value:0},{source:0, target:5, value:0.6},{source:0, target:6, value:0.5},
                     {source:0, target:7, value:0.5},{source:0, target:8, value:0.5},{source:0, target:9, value:0.5}],
-                {width: 1024, height: 540, gravity: 0.08, radius: 20, charge:-100, defaultLinkDistance: 50, 
-                    minLinkDistance:12, maxLinkDistance:130, bordersLimit:bordersLimit});
+                {width: 1024, height: 540, gravity: 0.08, defaultRadius: 20, charge:-100, linkMaximumDistance: 50, 
+                    linkMinimumDistance:12, linkMaximumDistance:130, bordersLimit:bordersLimit});
             }
             
             function testData2Event(event){
@@ -258,8 +256,8 @@
                     {source:0, target:22, value:0.8},
                     {source:0, target:23, value:0.8},
                 ];
-                var config = {width: 1024, height: 540, gravity: 0.05, radius: 20, charge:-100, 
-                    defaultLinkDistance: 50, minLinkDistance:20, maxLinkDistance:200, bordersLimit:bordersLimit};
+                var config = {width: 1024, height: 540, gravity: 0.05, defaultRadius: 20, charge:-100, 
+                    linkMaximumDistance: 50, linkMinimumDistance:20, linkMaximumDistance:200, bordersLimit:bordersLimit};
                 graphObj = updateVisualization(nodes, links, config);
             }
             function testData3Event(event){
@@ -329,8 +327,8 @@
                     {source:0, target:29, value:0, lengthMult:bigNodeLinkMult},
                     {source:0, target:30, value:0, lengthMult:bigNodeLinkMult},
                 ];
-                var config = {width: 1024, height: 540, gravity: 0.05, radius: 20, charge:-110, 
-                    defaultLinkDistance: 50, minLinkDistance:20, maxLinkDistance:200, bordersLimit:bordersLimit};
+                var config = {width: 1024, height: 540, gravity: 0.05, defaultRadius: 20, charge:-110, 
+                    linkMaximumDistance: 50, linkMinimumDistance:20, linkMaximumDistance:200, bordersLimit:bordersLimit};
                 graphObj = updateVisualization(nodes, links, config);
             }
        
@@ -340,8 +338,8 @@
                 console.log(links);
                 $('#btLastfmUsername').removeAttr('disabled');
                 
-                config = issetDefault(config, {width: 1024, height: 540, gravity: 0.08, radius: 20, charge:-100, 
-                    defaultLinkDistance: 50, minLinkDistance:20, maxLinkDistance:200});
+                config = issetDefault(config, {width: 1024, height: 540, gravity: 0.08, defaultRadius: 20, charge:-100, 
+                    linkMaximumDistance: 50, linkMinimumDistance:20, linkMaximumDistance:200});
                 var graphObj = create_force_visualization("#chart", config);
                 init_visualization(graphObj, nodes, links);
                 return graphObj;
