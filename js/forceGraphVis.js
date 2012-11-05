@@ -125,8 +125,7 @@ function create_force_visualization(pageElemSelector, config){
     o.onNodeMouseOver = function(node, index){
         console.log("MouseOver event over node[" + index + "] \"" +  node.name + "\"");
         var newRadius = node.radius * 1.5;
-        var difRadius = (newRadius - node.radius) * -1;
-        
+        var difRadius = (newRadius - node.radius) * -1;        
         var selector = d3.select(this);
         selector.style('z-index', Math.round(selector.style('z-index') * 2))
         .transition().duration(250)
@@ -139,12 +138,9 @@ function create_force_visualization(pageElemSelector, config){
     //o.layout.resume();
     }
     o.onNodeMouseOut = function(node, index){
-        console.log("MouseOut event over node[" + index + "] \"" +  node.name + "\"");
-        
+        console.log("MouseOut event over node[" + index + "] \"" +  node.name + "\"");      
         var selector = d3.select(this);
-        
-        selector.select('.text').text(node.name);
-        
+        //selector.select('.text').text(node.name);   
         selector.style('z-index', Math.round(selector.style('z-index') / 2))
         .transition().duration(250)
         .style('margin-top',"0px")
@@ -376,6 +372,7 @@ function init_visualization(graphObj, nodes, links){
         )
     .call(o.layout.drag)
     .call(d3.behavior.zoom().on("zoom", o.onZoomAction));
+
 
     //tell the physics how to update and to start
     o.layout

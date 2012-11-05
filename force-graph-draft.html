@@ -11,6 +11,8 @@
         <script type="text/javascript" src="js/utils.js"></script>
         <script type="text/javascript" src="js/forceGraphVis.js"></script>
         <script type="text/javascript" src="js/lasfm_SimilarArtistsEvents.js"></script>
+        <script type="text/javascript" src="js/virusDataSource.js"></script>
+        <script type="text/javascript" src="js/buzz.js"></script>
         <style type="text/css">
 
             circle.node {
@@ -120,6 +122,7 @@
                 <input id="btTest1" type="button" value="Use Test Data 1" /> 
                 <input id="btTest2" type="button" value="Use Test Data 2" />  
                 <input id="btTest3" type="button" value="Use Test Data 3" />  
+                <input id="btTestV1" type="button" value="Use VIRUS Test Data 1" />  
             </div>
             <div id="info"></div>
         </div>
@@ -190,6 +193,7 @@
             $('#btTest1').click(testData1Event);
             $('#btTest2').click(testData2Event);
             $('#btTest3').click(testData3Event);
+            $('#btTestV1').click(VIRUS_testData1Event);
             var settings = {
                 defaultTopArtists : 10,
                 defaultSimilarArtists : 50,
