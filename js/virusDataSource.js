@@ -1,6 +1,7 @@
 
 
 var soundEventObj = null
+var lastClickEventTime = 0;
 function VIRUS_testData1Event(){
     var result = VIRUS_convertSimilarSounds(VIRUS_getSimilarSoundsEvents(TEST_SOUND_EVENT_ID));
     var nodes = result[0];
@@ -18,16 +19,21 @@ function VIRUS_testData1Event(){
         gravity: 0.04, 
         defaultRadius: 30, 
         charge:-100,  
-        linkMinimumDistance:10, 
+        linkMinimumDistance:15, 
         linkMaximumDistance: 200, 
         bordersLimit:bordersLimit
     }    
     graphObj = create_force_visualization("#chart", config);
     
     graphObj.onNodeClick = function(node, index){
-        console.log("MouseClick event over node[" + index + "] \"" +  node.name + "\"");
         var selector = d3.select(this).select('.text');
-                
+        
+        var now = Date.now();
+        if(now - lastClickEventTime < 500) //ja passou 1 segundo desde o ultimo evento?
+        {
+            return;
+        }
+        lastClickEventTime = now;
         var sounds = ["Alien 1", "Alien 2", "Alien 3","Alien 4", 
         "Alien 5", "Big Monster", "Dinosaur Roar", "Godzilla Walking",
         "Monster Growl", "Mummy Zombie", "Pterodactyl Screech",
@@ -39,7 +45,6 @@ function VIRUS_testData1Event(){
         //global var soundEventObj, we only want 1 sound playing at a time
         if(isset(soundEventObj)){
             soundEventObj.stop();
-            soundEventObj = null;
         }
         soundEventObj = new buzz.sound( "sounds/effects/" + sounds[randomIndex], {
         //var mySound = new buzz.sound( "sounds/effects/Alien 1", {
@@ -48,10 +53,8 @@ function VIRUS_testData1Event(){
 	selector.text("Playing: " + node.name);
         var stopEvent = function(e) {
             selector.text(node.name);
-            soundEventObj = null;
-            selector.text(node.name);
         };        
-        soundEventObj.setVolume(40).play().bind( "abort", stopEvent).bind( "ended", stopEvent).bind( "pause", stopEvent);
+        soundEventObj.setVolume(40).play().bind( "ended", stopEvent);
         
         
     }
