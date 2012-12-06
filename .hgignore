@@ -3,3 +3,4 @@
 \.chg\..*$
 \.rej$
 \.conflict\~$
+^frontend/sounds/movies/24\.S01E01$
