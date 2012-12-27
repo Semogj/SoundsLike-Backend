@@ -33,31 +33,43 @@ class KLogger
     public $Log_Status = KLogger::LOG_CLOSED;
     public $DateFormat = "Y-m-d G:i:s";
     public $MessageQueue;
+    public $includeIP = true;
+    public $includeHostname = true;
+    public $includeFileAndLine = true;
     private $log_file;
     private $priority = KLogger::INFO;
     private $file_handle;
 
-    public function __construct($filepath, $priority)
+    public function __construct($filepath, $priority, $disablePhpProtection = false)
     {
+        $filepath = trim($filepath);
         if ($priority == KLogger::OFF)
             return;
-
+        if (!$disablePhpProtection && !endsWith($filepath, ".php"))
+        {
+            $filepath .= '.php';
+        }
         $this->log_file = $filepath;
         $this->MessageQueue = array();
         $this->priority = $priority;
 
-        if (file_exists($this->log_file))
-        {
+        $fileExists = file_exists($this->log_file);
+//        if ($fileExists)
+//        {
 //            if (!is_writable($this->log_file))
 //            {
 //                $this->Log_Status = KLogger::OPEN_FAILED;
 //                $this->MessageQueue[] = "The file exists, but could not be opened for writing. Check that appropriate permissions have been set.";
 //                return;
 //            }
-        }
+//        }
 
         if ($this->file_handle = fopen($this->log_file, "a"))
         {
+            if (!$fileExists && !$disablePhpProtection)
+            {
+                fwrite($this->file_handle, "<?php die(); ?>\n\n#Log File Start\n");
+            }
             $this->Log_Status = KLogger::LOG_OPEN;
             $this->MessageQueue[] = "The log file was opened successfully.";
         } else
@@ -75,37 +87,48 @@ class KLogger
             fclose($this->file_handle);
     }
 
-    public function LogInfo($line)
+    public function LogInfo($line, array $stacktrace = null)
     {
-        $this->Log($line, KLogger::INFO);
+        $this->_Log($line, KLogger::INFO, $stacktrace  ? $stacktrace : debug_backtrace());
     }
 
-    public function LogDebug($line)
+    public function LogDebug($line, array $stacktrace = null)
     {
-        $this->Log($line, KLogger::DEBUG);
+        $this->_Log($line, KLogger::DEBUG, $stacktrace  ? $stacktrace : debug_backtrace());
     }
 
-    public function LogWarn($line)
+    public function LogWarn($line, array $stacktrace = null)
     {
-        $this->Log($line, KLogger::WARN);
+        $this->_Log($line, KLogger::WARN, $stacktrace  ? $stacktrace : debug_backtrace());
     }
 
-    public function LogError($line)
+    public function LogError($line, array $stacktrace = null)
     {
-        $this->Log($line, KLogger::ERROR);
+        $this->_Log($line, KLogger::ERROR, $stacktrace  ? $stacktrace : debug_backtrace());
     }
 
-    public function LogFatal($line)
+    public function LogFatal($line, array $stacktrace = null)
     {
-        $this->Log($line, KLogger::FATAL);
+        $this->_Log($line, KLogger::FATAL, $stacktrace  ? $stacktrace : debug_backtrace());
     }
 
-    public function Log($line, $priority)
+    public function Log($line, $priority, array $stacktrace = null)
     {
+        $this->_Log($line, $priority, $stacktrace  ? $stacktrace : debug_backtrace());
+    }
+
+    private function _Log($line, $priority, array $stacktrace = null)
+    {
+        $fileLine = '';
+        if ($this->includeFileAndLine && $stacktrace != null)
+        {
+            $caller = array_shift($stacktrace);
+            $fileLine = ' In ' . $caller['file'] . ' on line ' . $caller['line'];
+        }
         if ($this->priority <= $priority)
         {
             $status = $this->getTimeLine($priority);
-            $this->WriteFreeFormLine("$status $line \n");
+            $this->WriteFreeFormLine("$status $line$fileLine\n");
         }
     }
 
@@ -123,24 +146,36 @@ class KLogger
     private function getTimeLine($level)
     {
         $time = date($this->DateFormat);
-
         switch ($level)
         {
             case KLogger::INFO:
-                return "$time - INFO  -->";
+                $level = 'INFO';
+                break;
             case KLogger::WARN:
-                return "$time - WARN  -->";
+                $level = 'WARN';
+                break;
             case KLogger::DEBUG:
-                return "$time - DEBUG -->";
+                $level = 'DEBUG';
+                break;
             case KLogger::ERROR:
-                return "$time - ERROR -->";
+                $level = 'ERROR';
+                break;
             case KLogger::FATAL:
-                return "$time - FATAL -->";
+                $level = 'FATAL';
+                break;
             default:
-                return "$time - LOG   -->";
+                $level = 'LOG';
         }
+
+        if ($this->includeIP)
+        {
+            $ip = ip_address();
+            if ($this->includeHostname)
+                $ip .= ' ' . gethostbyaddr($ip);
+            return "$time - $ip - $level  -->";
+        }
+
+        return "$time - $level   -->";
     }
 
 }
-
-?>

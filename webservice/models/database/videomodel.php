@@ -74,9 +74,9 @@ class VideoFilter extends ModelFilter
 
 }
 
-use VIRUS\webservice\VIRUS;
+use VIRUS\webservice\CoreVIRUS;
 
-class VideoModel implements Model
+class VideoModel implements DatabaseModel
 {
 
     const FIELD_VIDEO_ID = "idVideo";
@@ -100,7 +100,7 @@ class VideoModel implements Model
         $offsetPage = (validate_pos_int($offsetPage, API_DEFAULT_RESULT_PAGE) - 1) * $limit; //offset
 
         /* @var $db \PDO */
-        $db = VIRUS::getDb();
+        $db = CoreVIRUS::getDb();
         $result = $db->query('SELECT *  FROM ' . self::TABLE_VIDEO . " LIMIT $offset, $limit");
 
         return $result ? $result->fetchAll(PDO::FETCH_ASSOC) : false;
@@ -112,7 +112,7 @@ class VideoModel implements Model
         $offsetPage = (validate_pos_int($offsetPage, API_DEFAULT_RESULT_PAGE) - 1) * $limit; //offset
 
         /* @var $db \PDO */
-        $db = VIRUS::getDb();
+        $db = CoreVIRUS::getDb();
         $where = $filter->getStatementQuery();
         $statement = $db->prepare('SELECT *  FROM ' . self::TABLE_VIDEO . " WHERE $where LIMIT $offset, $limit");
         if (!$statement->execute($filter->getVarArray()))
@@ -124,14 +124,14 @@ class VideoModel implements Model
     {
         $id = validate_pos_int($id, -1);
         /* @var $db \PDO */
-        $db = VIRUS::getDb();
+        $db = CoreVIRUS::getDb();
         $result = $db->query('SELECT *  FROM ' . self::TABLE_VIDEO . " WHERE id=$id LIMIT 1");
         return $result ? $result->fetchAll(PDO::FETCH_ASSOC) : false;
     }
 
     public static function createEntry($title, $genres = '', $actors = '', $year = '')
     {
-        $logger = VIRUS::getLogger();
+        $logger = CoreVIRUS::getLogger();
         $fields = array();
         if (empty($title))
         {
@@ -175,7 +175,7 @@ class VideoModel implements Model
                 };
         $query = 'INSERT INTO ' . self::TABLE_VIDEO . ' (' . implode(', ', array_keys($fields)) . ') VALUES (' . $x(count($fields)) . ')';
         /* @var $db \PDO */
-        $db = VIRUS::getDb();
+        $db = CoreVIRUS::getDb();
         $statement = $db->prepare($query);
         return $statement->execute(array_values($fields)) && $statement->rowCount() > 0 ? $db->lastInsertId() : false;
     }
@@ -183,7 +183,7 @@ class VideoModel implements Model
     public static function getCount(ModelFilter $filter)
     {
 
-        $db = VIRUS::getDb();
+        $db = CoreVIRUS::getDb();
         if (isset($filter))
         {
             $result = $db->query('SELECT COUNT(*) FROM ' . self::TABLE_VIDEO);

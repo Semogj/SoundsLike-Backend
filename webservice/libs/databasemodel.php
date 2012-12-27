@@ -1,8 +1,11 @@
 <?php
 
 namespace VIRUS\webservice\models;
-
-interface Model
+interface Model{
+    
+    
+}
+interface DatabaseModel extends Model
 {
 
     public static function filter();
