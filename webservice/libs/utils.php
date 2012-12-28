@@ -1,7 +1,8 @@
 <?php
 
-if(!defined("VIRUS")){
-    die("You are not allowed here!");    
+if (!defined("VIRUS"))
+{
+    die("You are not allowed here!");
 }
 
 function getArrayAsXML(array $theArray, $previousKey = null)
@@ -552,18 +553,21 @@ function endsWith($haystack, $needle, $case = true)
 
     return strripos($haystack, $needle, 0) === $expectedPosition;
 }
+
 /**
  * Returns true if the current php version is compatible (bigger) with the $version parameter.
  * Verifies and caches the verification for quick access. 
  * @param string $version
  * @return boolean
  */
-function isPHPVersion($version){
+function isPHPVersion($version)
+{
     $version = 'isPHPVersion' . $version;
-    if(isset($GLOBALS[$version]))
+    if (isset($GLOBALS[$version]))
         return $GLOBALS[$version];
     return $GLOBALS[$version] = version_compare(PHP_VERSION, $version, '<=');
 }
+
 /**
  * Check if the parsed value is a valid positive integer, and returns a default value if not.
  * The value 0 is counted as invalid. 
@@ -571,14 +575,16 @@ function isPHPVersion($version){
  * @param type $theDefault
  * @param type $base the integer base, default is base 10. 
  */
-function validate_pos_int($theValue, $theDefault, $base = 10) {
+function validate_pos_int($theValue, $theDefault, $base = 10)
+{
     $theValue = intval($theValue, $base);
     return $theValue > 0 ? $theValue : $theDefault;
 }
 
-function is_valid_url($theString) {
+function is_valid_url($theString)
+{
     return preg_match(
-    '/^
+                    '/^
 (# Scheme
  [a-z][a-z0-9+\-.]*:
  (# Authority & path
@@ -597,6 +603,125 @@ function is_valid_url($theString) {
 (\?[a-z0-9\-._~%!$&\'()*+,;=:@\/?]*)?
 # Fragment
 (\#[a-z0-9\-._~%!$&\'()*+,;=:@\/?]*)?
-$/ix',
-    $theString);
+$/ix', $theString);
+}
+
+/**
+ * Singular
+ *
+ * Takes a plural word and makes it singular
+ * This is a function retrieved from the Inflector helper of CodeIgniter PHP framework.
+ * 
+ * @author ExpressionEngine Dev Team
+ * @copyright	Copyright (c) 2008 - 2011, EllisLab, Inc.
+ * @license http://codeigniter.com/user_guide/license.html
+ * @param string $str
+ * @return string
+ */
+if (!function_exists('singular'))
+{
+
+    function singular($str)
+    {
+        $result = strval($str);
+
+        $singular_rules = array(
+            '/(matr)ices$/' => '\1ix',
+            '/(vert|ind)ices$/' => '\1ex',
+            '/^(ox)en/' => '\1',
+            '/(alias)es$/' => '\1',
+            '/([octop|vir])i$/' => '\1us',
+            '/(cris|ax|test)es$/' => '\1is',
+            '/(shoe)s$/' => '\1',
+            '/(o)es$/' => '\1',
+            '/(bus|campus)es$/' => '\1',
+            '/([m|l])ice$/' => '\1ouse',
+            '/(x|ch|ss|sh)es$/' => '\1',
+            '/(m)ovies$/' => '\1\2ovie',
+            '/(s)eries$/' => '\1\2eries',
+            '/([^aeiouy]|qu)ies$/' => '\1y',
+            '/([lr])ves$/' => '\1f',
+            '/(tive)s$/' => '\1',
+            '/(hive)s$/' => '\1',
+            '/([^f])ves$/' => '\1fe',
+            '/(^analy)ses$/' => '\1sis',
+            '/((a)naly|(b)a|(d)iagno|(p)arenthe|(p)rogno|(s)ynop|(t)he)ses$/' => '\1\2sis',
+            '/([ti])a$/' => '\1um',
+            '/(p)eople$/' => '\1\2erson',
+            '/(m)en$/' => '\1an',
+            '/(s)tatuses$/' => '\1\2tatus',
+            '/(c)hildren$/' => '\1\2hild',
+            '/(n)ews$/' => '\1\2ews',
+            '/([^u])s$/' => '\1',
+        );
+
+        foreach ($singular_rules as $rule => $replacement)
+        {
+            if (preg_match($rule, $result))
+            {
+                $result = preg_replace($rule, $replacement, $result);
+                break;
+            }
+        }
+
+        return $result;
+    }
+
+}
+
+/**
+ * Plural
+ *
+ * Takes a singular word and makes it plural
+ *
+ * This is a function retrieved from the Inflector helper of CodeIgniter PHP framework.
+ * 
+ * @author ExpressionEngine Dev Team
+ * @copyright	Copyright (c) 2008 - 2011, EllisLab, Inc.
+ * @license http://codeigniter.com/user_guide/license.html
+ * @param string $str
+ * @param boolean
+ * @return string
+ */
+if (!function_exists('plural'))
+{
+
+    function plural($str)
+    {
+        $result = strval($str);
+
+        $plural_rules = array(
+            '/^(ox)$/' => '\1\2en', // ox
+            '/([m|l])ouse$/' => '\1ice', // mouse, louse
+            '/(matr|vert|ind)ix|ex$/' => '\1ices', // matrix, vertex, index
+            '/(x|ch|ss|sh)$/' => '\1es', // search, switch, fix, box, process, address
+            '/([^aeiouy]|qu)y$/' => '\1ies', // query, ability, agency
+            '/(hive)$/' => '\1s', // archive, hive
+            '/(?:([^f])fe|([lr])f)$/' => '\1\2ves', // half, safe, wife
+            '/sis$/' => 'ses', // basis, diagnosis
+            '/([ti])um$/' => '\1a', // datum, medium
+            '/(p)erson$/' => '\1eople', // person, salesperson
+            '/(m)an$/' => '\1en', // man, woman, spokesman
+            '/(c)hild$/' => '\1hildren', // child
+            '/(buffal|tomat)o$/' => '\1\2oes', // buffalo, tomato
+            '/(bu|campu)s$/' => '\1\2ses', // bus, campus
+            '/(alias|status|virus)/' => '\1es', // alias
+            '/(octop)us$/' => '\1i', // octopus
+            '/(ax|cris|test)is$/' => '\1es', // axis, crisis
+            '/s$/' => 's', // no change (compatibility)
+            '/$/' => 's',
+        );
+
+        foreach ($plural_rules as $rule => $replacement)
+        {
+            if (preg_match($rule, $result))
+            {
+                $result = preg_replace($rule, $replacement, $result);
+                break;
+            }
+        }
+
+        return $result;
+    }
+
 }

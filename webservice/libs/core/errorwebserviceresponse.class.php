@@ -24,7 +24,7 @@ class ErrorWebserviceResponse extends WebserviceResponse
             }
             $errorArray['messages'] = $tmpArr;
         }
-        $this->outputResource['error'] = $errorArray;
+        $this->outputResource['output'] = $errorArray;
     }
 
 }
