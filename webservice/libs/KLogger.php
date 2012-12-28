@@ -1,5 +1,9 @@
 <?php
 
+if(!defined("VIRUS")){
+    die("You are not allowed here!");    
+}
+
 /* Finally, A light, permissions-checking logging class. 
  * 
  * Author	: Kenneth Katzgrau < katzgrau@gmail.com >

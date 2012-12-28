@@ -1,27 +1,10 @@
 <?php
 
 namespace VIRUS\webservice\models;
-interface Model{
-    
-    
-}
-interface DatabaseModel extends Model
+
+if (!defined("VIRUS"))
 {
-
-    public static function filter();
-
-    public static function get($limit, $offsetPage);
-
-    public static function getFiltered(ModelFilter $filter, $limit = API_DEFAULT_RESULT_LIMIT, $offsetPage = API_DEFAULT_RESULT_PAGE);
-
-    public static function getSingle($id);
-    
-    public static function getCount(ModelFilter $filter = null);
-
-    public static function createEntry();
-    
-    public static function updateEntry($id);
-    
+    die("You are not allowed here!");
 }
 
 /**
@@ -35,7 +18,7 @@ abstract class ModelFilter
     private $conditions; //conditions query for prepared statements
     private $varArray; //conditions values for prepared statements
     //control variables
-            private $AND_flag, $OR_FLAG;
+    private $AND_flag, $OR_FLAG;
     private $counter;
 
     const statementFieldIdentifier = ':';

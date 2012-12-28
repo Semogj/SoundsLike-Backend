@@ -2,6 +2,10 @@
 
 namespace VIRUS\webservice\services;
 
+if(!defined("VIRUS")){
+    die("You are not allowed here!");    
+}
+
 use VIRUS\webservice\CoreVIRUS;
 use VIRUS\webservice\WebserviceRequest;
 use VIRUS\webservice\WebserviceResponse;

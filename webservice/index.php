@@ -11,7 +11,10 @@ $config = array(
     'logFile' => 'logs/logFile.txt',
     'debug' => true
 );
-require_once 'libs/utils.php';
+
+//constant to prevent direct script access
+define('VIRUS',1);
+
 require_once 'libs/core.php';
 
 
@@ -33,17 +36,18 @@ const HTML_502_SERVICE_UNAVAILABLE = 503;
 const API_DEFAULT_RESULT_LIMIT = 100; //results by page
 const API_DEFAULT_RESULT_PAGE = 1; //default result page
 const LOG_LEVEL = \KLogger::DEBUG;
+
 const CONTROLLERS_FOLDER = 'controllers/';
 const CONTROLLERS_NAMESPACE = 'VIRUS\\webservice\\controllers\\';
 const MODELS_FOLDER = 'models/';
-const VIEWS_FOLDER = 'views/';
 const MODELS_NAMESPACE = 'VIRUS\\webservice\\models\\';
-const MODEL_PARENT_CLASS = 'VIRUS\\webservice\\models\\Model';
 const SERVICES_FOLTER = 'services/';
 const SERVICES_NAMESPACE = 'VIRUS\\webservice\\services\\';
-const SERVICE_PARENT_CLASS = 'VIRUS\\webservice\\services\\WebserviceService';
+const VIEWS_FOLDER = 'views/';
+
 
 define('ROOT_DIRECTORY', dirname(__FILE__) . '/');
+
 
 date_default_timezone_set('Europe/Lisbon');
 
@@ -96,7 +100,7 @@ try
     showErrorResponse(HTML_502_SERVICE_UNAVAILABLE, 'Database connection error', 
             'It seems that the database is busy for us (or just anti-social)! Try again later.');
 }
-\Slim\Slim::registerAutoloader();
+
 CoreVIRUS::registerDB($db);
 $logger->LogDebug("Database connection established and registered.");
 

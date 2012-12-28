@@ -6,6 +6,11 @@ use VIRUS\webservice\WebserviceResponse;
 use VIRUS\webservice\ErrorWebserviceResponse;
 use VIRUS\webservice\OkWebserviceResponse;
 
+if(!defined("VIRUS")){
+    die("You are not allowed here!");    
+}
+
+
 class Apiv1 extends Controller
 {
     public function __construct()
@@ -21,7 +26,7 @@ class Apiv1 extends Controller
         $service = CoreVIRUS::loadService($resource);
         if(!$service)
         {
-            $errorMsg = "These aren't the droids you are looking for! Invalid webservice resource '$resource'";
+            $errorMsg = "These aren't the droids you are looking for! Invalid service resource '$resource'.";
             $logger->LogInfo("Invalid service request 'apiv1/$resource'");
             $response = new ErrorWebserviceResponse(WebserviceResponse::$ERR_INVALID_RESOURCE, $errorMsg);
             

@@ -2,6 +2,11 @@
 
 namespace VIRUS\webservice;
 
+if (!defined("VIRUS"))
+{
+    die("You are not allowed here!");
+}
+
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
@@ -15,18 +20,20 @@ namespace VIRUS\webservice;
  */
 class URI
 {
+
     private static $instance;
-    
+
     /**
      * 
      * @return URI
      */
-    public static function getInstance(){
-        if(self::$instance == null)
+    public static function getInstance()
+    {
+        if (self::$instance == null)
             self::$instance = new URI();
         return self::$instance;
     }
-    
+
     private $uriString;
     private $segments;
 
@@ -38,24 +45,29 @@ class URI
 
     const PERMITTED_URI_CHARS = 'a-z 0-9~%.:_\-;={}';
     const URI_PROTOCOL = 'AUTO';
-    
-    public function getURIString(){
+
+    public function getURIString()
+    {
         return $this->uriString;
     }
-    public function getSegmentArray($leftSegmentsToExclude = 0){
-        if($leftSegmentsToExclude == 0)
+
+    public function getSegmentArray($leftSegmentsToExclude = 0)
+    {
+        if ($leftSegmentsToExclude == 0)
             return $this->segments;
-         return array_slice($this->segments, $leftSegmentsToExclude);
+        return array_slice($this->segments, $leftSegmentsToExclude);
     }
+
     public function getSegment($index, $default = FALSE)
     {
-        return isset($this->segments[$index]) ? $this->segments[$index] : $default ;
+        return isset($this->segments[$index]) ? $this->segments[$index] : $default;
     }
-    public function getSegmentCount(){
+
+    public function getSegmentCount()
+    {
         return count($this->segments);
     }
-    
-    
+
     private function _remap($service, $params = array(), $version = '1')
     {
         $request = new WebserviceRequest($service, $params);
@@ -77,12 +89,12 @@ class URI
     private static function _fetch_uri_string()
     {
         $getUriString = function ($str) {
-            // Filter out control characters
-            $str = remove_invisible_characters($str, FALSE);
+                    // Filter out control characters
+                    $str = remove_invisible_characters($str, FALSE);
 
-            // If the URI contains only a slash we'll kill it
-            return ($str == '/') ? '' : $str;
-        };
+                    // If the URI contains only a slash we'll kill it
+                    return ($str == '/') ? '' : $str;
+                };
         if (strtoupper(self::URI_PROTOCOL) == 'AUTO')
         {
             // Is the request coming from the command line?
