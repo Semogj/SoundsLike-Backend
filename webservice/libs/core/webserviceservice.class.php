@@ -95,3 +95,46 @@ abstract class WebserviceService
     abstract function afterRequest(WebserviceRequest $request);
 }
 
+/**
+ GET SKELETON:
+
+ public function get(WebserviceRequest $request)
+    {
+
+        //"limit" and "page" parameters are used to prevent overload of the webservice.
+        //$limit parameter reduces the output collection to a number of $limit entries by page
+        $limit = $request->getSegmentAsPositiveInt('limit', 100, API_MAX_LIMIT);
+        //$offsetPage parameter represents an indexed page composed a collection of size $limit.
+        $offsetPage = $request->getSegmentAsPositiveInt('page', 1);
+                
+        //output variable must be a VIRUS\webservice\WebserviceResponse object.
+        $output = null;
+        //Checking if the first segment, after the service segment is an integer
+        // if its an integer, it means we are selecting a specific entry of the service
+        $idSegment = $request->getRawSegmentAsInt(1, false);
+        if ($idSegment === false)
+        {
+            $resultArr = array(); //fetch result here
+            $resultResource = new WebserviceCollection($this->getServiceName(), $resultArr, null, $limit, $offsetPage);
+            $output = new OkWebserviceResponse($request->getAcceptType(), 200, array($resultResource));
+        } else
+        {
+            //are we selecting the related collection to this entry?
+            switch ($request->getRawSegment(2, null))
+            {
+                case 'servi':
+                
+                    $resultArr = array(); //fetch result
+                    $total = null; //fetch total here
+                    $resultRes = new ResultResource('article', $request, $total, $limit, $offsetPage);
+                    $output = new OkWebserviceResponse($request->getAcceptType(), 200, array($resultRes));
+                    break;
+                default:
+                    $resultArr = $this->newsModel->getSingleNewsItemById($idSegment);
+                    $resultRes = new ResultResource('article', $resultArr);
+                    $output = new OkWebserviceResponse($request->getAcceptType(), 200, array($resultRes));
+            }
+        }
+        return $output;
+    } 
+ */

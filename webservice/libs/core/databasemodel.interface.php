@@ -1,5 +1,6 @@
 <?php
 namespace VIRUS\webservice\models;
+use VIRUS\webservice\models\ModelFilter;
 
 if(!defined("VIRUS")){
     die("You are not allowed here!");    
@@ -20,7 +21,7 @@ interface DatabaseModel extends Model
     
     public static function getCount(ModelFilter $filter = null);
 
-    public static function createEntry();
+    public static function createEntry($a);
     
     public static function updateEntry($id);
     

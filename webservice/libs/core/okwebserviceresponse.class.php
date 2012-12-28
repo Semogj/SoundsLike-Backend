@@ -12,7 +12,7 @@ class OkWebserviceResponse extends WebserviceResponse
 
     public function __construct($resultType = 'xml', $status = WebserviceResponse::HTML_200_OK, array $outputArray = array())
     {
-        parent::__construct($status, $resultType, $status, $outputArray);
+        parent::__construct($status, $resultType, $outputArray);
     }
 
 }
