@@ -117,7 +117,7 @@ class CoreVIRUS
             self::getLogger()->LogError("Unable to include service '$service' source file (path: '$filename').", debug_backtrace());
             false;
         }
-        if (class_exists($className) && ($serviceObj = new $className) instanceof services\WebserviceService)
+        if (class_exists($className) && ($serviceObj = new $className($service)) instanceof services\WebserviceService)
         {
             self::getLogger()->LogDebug("Service '$service' loaded with success from file $filename.", debug_backtrace());
             return $serviceObj;

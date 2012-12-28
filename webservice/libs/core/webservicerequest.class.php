@@ -175,20 +175,20 @@ class WebserviceRequest
         return !empty($this->segments[$indexOrKey]) ? $this->segments[$indexOrKey] : $default;
     }
 
-    public function getSegmentAsInt($indexOrKey, $default = false)
+    public function getSegmentAsInt($indexOrKey, $default = false, $maxValue = PHP_INT_MAX)
     {
         if (empty($this->segments[$indexOrKey]))
             return $default;
         $str = $this->segments[$indexOrKey];
-        return is_numeric($str) ? intval($str, 10) : $default;
+        return is_numeric($str) ? min(intval($str, 10),$maxValue) : $default;
     }
 
-    public function getSegmentAsPositiveInt($indexOrKey, $default = false)
+    public function getSegmentAsPositiveInt($indexOrKey, $default = false, $maxValue = PHP_INT_MAX)
     {
         if (empty($this->segments[$indexOrKey]))
             return $default;
         $val = intval($this->segments[$indexOrKey]);
-        return $val > 0 ? $val : $default;
+        return $val > 0 ? min($val, $maxValue) : $default;
     }
 
     public function getRawSegment($indexOrKey, $default = false)
@@ -196,20 +196,20 @@ class WebserviceRequest
         return !empty($this->rawParameters[$indexOrKey]) ? $this->rawParameters[$indexOrKey] : $default;
     }
 
-    public function getRawSegmentAsInt($indexOrKey, $default = false)
+    public function getRawSegmentAsInt($indexOrKey, $default = false, $maxValue = PHP_INT_MAX)
     {
         if (empty($this->rawParameters[$indexOrKey]))
             return $default;
         $str = $this->rawParameters[$indexOrKey];
-        return is_numeric($str) ? intval($str, 10) : $default;
+        return is_numeric($str) ? min(intval($str, 10),$maxValue) : $default;
     }
 
-    public function getRawSegmentAsPositiveInt($indexOrKey, $default = false)
+    public function getRawSegmentAsPositiveInt($indexOrKey, $default = false, $maxValue = PHP_INT_MAX)
     {
         if (empty($this->rawParameters[$indexOrKey]))
             return $default;
         $val = intval($this->rawParameters[$indexOrKey]);
-        return $val > 0 ? $val : $default;
+        return $val > 0 ? min($val, $maxValue) : $default;
     }
 
     public function getSegments()

@@ -19,10 +19,21 @@ abstract class WebserviceService
      * @var \KLogger
      */
     protected $logger;
-
-    public function __construct()
+    private $serviceName;
+    
+    /**
+     * If you want to use a fixed name, just pass a string when overriding this constructor!
+     * @param string $serviceName
+     */
+    public function __construct($serviceName)
     {
         $this->logger = \VIRUS\webservice\CoreVIRUS::getLogger();
+        $logger = CoreVIRUS::getLogger();
+        $this->serviceName = $serviceName;
+    }
+    
+    public function getServiceName(){
+        return $this->serviceName;
     }
 
     /**
@@ -30,7 +41,7 @@ abstract class WebserviceService
      */
     public function processRequest(WebserviceRequest $request)
     {
-        $logger = CoreVIRUS::getLogger();
+        
         $requestMethod = $request->getMethod();
         try
         {
