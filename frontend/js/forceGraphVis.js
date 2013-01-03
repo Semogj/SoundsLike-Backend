@@ -1,4 +1,5 @@
 /*
+ForceGraphVis version 0.1
 ###################################################
 ############### QUICK USE EXAMPLE #################
 ###################################################
@@ -131,7 +132,6 @@ var ForceGraphVis =
             }else{
                 return (sourceRadius + targetRadius + gObj.config.linkDefaultDistance)*lengthMult;
             }
-
         })
         //define the size of the canvas
         .size([this.config.width,this.config.height]);
@@ -141,15 +141,12 @@ var ForceGraphVis =
           
         //set up the visualization
         this.canvas = d3.select(pageElemSelector).style("width", this.config.width + "px").style("height", this.config.height + "px");
-                
-    
-    
-    
+      
         this.isInitialized = false;
         this.isRunning = false;
     
         //maping some functions
-        this.start = function(){
+        this.restart = function(){
             this.layout.start();
             this.isRunning = true;
             return this;
@@ -157,6 +154,11 @@ var ForceGraphVis =
         this.stop = function(){
             this.layout.stop();
             this.isRunning = false;
+            return this;
+        }
+        this.resume = function(){
+            this.layout.resume();
+            this.isRunning = true;
             return this;
         }
     
@@ -359,12 +361,18 @@ var ForceGraphVis =
      * Toogle borders limit ON or OFF for this graph. Nodes cannot leave canvas when borders limit is ON.
      * Any node outside of the canvas will be thrown inside.
      */
-        this.toggleBordersLimit = function(){
-            o.stop();
-            o.config.bordersLimit = !o.config.bordersLimit;
-            o.tick();
-            o.start();
+        this.setBordersLimit = function(val){
+            var o = gObj;
+            o.toggleBordersLimitAndGet(val);
             return o;
+        }
+        this.toggleBordersLimit = function(val){
+            var o = gObj;
+            o.stop();
+            o.config.bordersLimit = issetDefault(val, !o.config.bordersLimit);
+            o.tick();
+            o.resume();
+            return o.config.bordersLimit;
         }
         
         //private
@@ -421,6 +429,13 @@ var ForceGraphVis =
         
         this.start = function (nodes, links){
             var o = this;
+            if(!isset(nodes)){
+                //no paremeters, act as restart!
+                o.layout.start();
+                o.isRunning = true;
+                return o;                
+            }
+            
             //add links to the visualization
             o.visLinks = o.canvas.selectAll("div.link")
             .data(links)

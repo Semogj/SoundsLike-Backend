@@ -10,7 +10,8 @@ function isset(variable){
 }
 /**
   * Returns the first parameter if it is defined and not null, otherwise returns the second.
-  * For most situations, var x = x || default will work, but if you are expecting x = 0, this is a stronger solution.
+  * For most situations, var x = x || default will work, but if you are expecting x = 0
+  *  or x = false, this is a stronger solution.
   */
 function issetDefault(variable, defaultVal){
     return isset(variable) ? variable : defaultVal;

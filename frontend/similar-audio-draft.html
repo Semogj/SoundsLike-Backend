@@ -131,17 +131,19 @@
         </div>
         <script type="text/javascript">
             
-            var bordersLimit = false;
+
             var graphObj = null;
             
-                   
+           //borders button click event        
            $('#btBordersLimit').click(function(e){
-                bordersLimit = !bordersLimit;
-                $('#btBordersLimit').val("Border Limit : " + (bordersLimit ? "On" : "Off"));
+                var bordersLimit = false;
                 if(isset(graphObj)){
-                    graphObj.toggleBordersLimit();
-                    
+                    bordersLimit = graphObj.toggleBordersLimit()               
+                }else{
+                    bordersLimit = $('#btBordersLimit').val() === "Border Limit : On" ? false : true;
                 }
+                $('#btBordersLimit').val("Border Limit : " + (bordersLimit ? "On" : "Off"));
+                
             })
             $('#btZoomIn').click(function(e){
                 graphObj.changeZoom([graphObj.width/2, graphObj.height/2], 0.1);
@@ -158,19 +160,7 @@
                 matchMinimum: 0.4
             }
             
-       
-            function updateVisualization(nodes, links, config){
-                setInfo(nodes.length + ' nodes and '+ links.length + ' connection. Rendering visualization...');
-                console.log(nodes);
-                console.log(links);
-                $('#btLastfmUsername').removeAttr('disabled');
-                
-                config = issetDefault(config, {width: 1024, height: 540, gravity: 0.08, defaultRadius: 20, charge:-100, 
-                    linkMaximumDistance: 50, linkMinimumDistance:20, linkMaximumDistance:200});
-                var graphObj = create_force_visualization("#chart", config);
-                init_visualization(graphObj, nodes, links);
-                return graphObj;
-            }
+              
             
             function setInfo(msg, type){
                 var infoBox = $('#info').removeClass();

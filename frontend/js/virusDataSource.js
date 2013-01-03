@@ -21,7 +21,7 @@ function VIRUS_testData1Event(){
         charge:-100,  
         linkMinimumDistance:15, 
         linkMaximumDistance: 300, 
-        bordersLimit:bordersLimit,
+        bordersLimit: $('#btBordersLimit').val() === "Border Limit : On" ? true : false,
         nodeFillScale: d3.scale.ordinal().range(["#AEC7E8","#C00000"])
     }    
     graphObj = new ForceGraphVis.create("#chart", config);
