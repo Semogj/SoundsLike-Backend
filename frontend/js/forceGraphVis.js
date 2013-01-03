@@ -103,9 +103,7 @@ var ForceGraphVis =
         {
             //create an object to return that will hold the layout, properties and the visualization
             create: function(pageElemSelector, config) {
-                //lets cleanup and process the config file
-                processConfig(this, config);
-
+                
                 //NOTE: similar to the 3D ambients, we have two contextes: the physics context and the visualization context
                 //The physics context is were the elements directions are interpolated and position calculated.
                 //The visualization context is what we going to show to the user (in the HTML or SVG!)
@@ -114,35 +112,104 @@ var ForceGraphVis =
                 //visualization context = canvas (o.canvas)
                 //physics context = layout (o.layout)
 
-                var gObj = this; // will store the main object, this is needed to pass values for some calls
+                var gObj = this;  //will store the main object, this is needed to pass values for some calls
+               
                 //set up the layout (the physics context)
-                this.layout = d3.layout.force()
-                        .gravity(gObj.config.gravity)
-                        .charge(gObj.config.charge)
-                        .linkDistance(function(link) {
-                    var sourceRadius = isset(link.source.radius) ? link.source.radius : gObj.config.defaultRadius;
-                    var targetRadius = isset(link.target.radius) ? link.target.radius : gObj.config.defaultRadius;
-                    var lengthMult = issetDefault(link.lengthMult, 1);
-                    if (isset(link.value)) {
-                        //we are assuming that link.value have normalized values between 0 and 1.
-                        var value = link.value < 0 ? 0 : link.value > 1 ? 1 : link.value;
-                        return (sourceRadius + targetRadius + gObj.config.linkMinimumDistance + gObj.config.linkMaximumDistance -
-                                (gObj.config.linkMaximumDistance - gObj.config.linkMinimumDistance) * value) * lengthMult;
-                    } else {
-                        return (sourceRadius + targetRadius + gObj.config.linkDefaultDistance) * lengthMult;
-                    }
-                })
-                        //define the size of the canvas
-                        .size([this.config.width, this.config.height]);
-
+                this.layout = d3.layout.force();
+                
+                //lets cleanup and process the config file
+                loadConfig(config);
+                
                 //element cleanup
                 $(pageElemSelector).html("");
 
-                //set up the visualization
-                this.canvas = d3.select(pageElemSelector).style("width", this.config.width + "px").style("height", this.config.height + "px");
-
                 this.isInitialized = false;
                 this.isRunning = false;
+
+                //private
+                function loadConfig(config, reload) {
+                    //cleanup config
+                    cleanConfig(config, reload);
+                    //setup layout properties based on config
+                    gObj.layout.gravity(gObj.config.gravity)
+                            .charge(gObj.config.charge)
+                            .linkDistance(function(link) {
+                        var sourceRadius = isset(link.source.radius) ? link.source.radius : gObj.config.defaultRadius;
+                        var targetRadius = isset(link.target.radius) ? link.target.radius : gObj.config.defaultRadius;
+                        var lengthMult = issetDefault(link.lengthMult, 1);
+                        if (isset(link.value)) {
+                            //we are assuming that link.value have normalized values between 0 and 1.
+                            var value = link.value < 0 ? 0 : link.value > 1 ? 1 : link.value;
+                            return (sourceRadius + targetRadius + gObj.config.linkMinimumDistance + gObj.config.linkMaximumDistance -
+                                    (gObj.config.linkMaximumDistance - gObj.config.linkMinimumDistance) * value) * lengthMult;
+                        } else {
+                            return (sourceRadius + targetRadius + gObj.config.linkDefaultDistance) * lengthMult;
+                        }
+                    })
+                            //define the size of the canvas
+                            .size([gObj.config.width, gObj.config.height]);
+
+                    //set up the visualization
+                    gObj.canvas = d3.select(pageElemSelector).style("width", gObj.config.width + "px").style("height", gObj.config.height + "px");
+                };
+
+                //private
+                function cleanConfig(config, reuse)
+                {
+
+                    gObj.config = {
+                        width: getProperty(config, "width", reuse ? gObj.config.width : 960),
+                        height: getProperty(config, "height", reuse ? gObj.config.height : 500),
+                        gravity: getProperty(config, "gravity", reuse ? gObj.config.gravity : 0.05),
+                        charge: getProperty(config, "charge", reuse ? gObj.config.charge : -100),
+                        defaultRadius: getProperty(config, "defaultRadius", reuse ? gObj.config.defaultRadius : 6),
+                        defaultGroup: getProperty(config, "defaultGroup", reuse ? gObj.config.defaultGroup : 1),
+                        linkDefaultDistance: getProperty(config, "linkDefaultDistance", reuse ? gObj.config.linkDefaultDistance : 30),
+                        linkMinimumDistance: getProperty(config, "linkMinimumDistance", reuse ? gObj.config.linkMinimumDistance : 10),
+                        linkMaximumDistance: getProperty(config, "linkMaximumDistance", reuse ? gObj.config.linkMaximumDistance : 60),
+                        bordersLimit: getProperty(config, "bordersLimit", reuse ? gObj.config.bordersLimit : true),
+                        nodeFillScale: getProperty(config, "nodeFillScale", reuse ? gObj.config.nodeFillScale : d3.scale.category20()),
+                        pzoom: getProperty(config, "zoom", reuse ? gObj.config.pzoom : 1), //yes zoom is correct here!
+                        zoom: getProperty(config, "zoom", reuse ? gObj.config.zoom : 1),
+                        minZoom: getProperty(config, "minZoom", reuse ? gObj.config.minZoom : 0.0625), //-4x
+                        maxZoom: getProperty(config, "maxZoom", reuse ? gObj.config.maxZoom : 5), //5x
+                        initialZoom: getProperty(config, "initialZoom", reuse ? gObj.config.initialZoom : gObj.zoom),
+                        linkColorScaleDomain: getProperty(config, "linkColorScaleDomain", reuse ? gObj.config.linkColorScaleDomain : null),
+                        linkColorScaleRange: getProperty(config, "linkColorScaleRange", reuse ? gObj.config.linkColorScaleRange : null),
+                        linkColorScale: getProperty(config, "linkColorScale", reuse ? gObj.config.linkColorScale : null)
+                    };
+                    if (gObj.config.linkColorScale === null) {
+                        //Custom scale is not defined. Lets use a default linear scale.
+                        gObj.config.linkColorScale = d3.scale.linear();
+                        //Are custom scale domains and ranges defined in config? If not, lets use default values.
+                        if (gObj.config.linkColorScaleDomain !== null) {
+                            gObj.config.linkColorScale.domain(gObj.config.linkColorScaleDomain); //config domain
+                        } else {
+                            gObj.config.linkColorScale.domain([0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1]); //default domain
+                        }
+                        if (gObj.config.linkColorScaleRange !== null) {
+                            gObj.config.linkColorScale.range(gObj.config.linkColorScaleRange); //config range
+                        } else {
+                            //default range
+                            gObj.config.linkColorScale.range(["#0066FF", "#00CC99", "#00CC00", "#99CC00", "#FF9900", "#FF6600", "#FF3300", "#FF0000", "#B20000"]);
+                        }
+                    } else {
+                        //Custom scale in config found. Add the scale and/or if also defined in the config. 
+                        //If not we use the domain and range of the custom scale.
+                        if (gObj.config.linkColorScaleDomain !== null) {
+                            gObj.config.linkColorScale.domain(gObj.config.linkColorScaleDomain);
+                        }
+                        if (gObj.config.linkColorScaleRange !== null) {
+                            gObj.config.linkColorScale.range(gObj.config.linkColorScaleRange);
+                        }
+                    }
+
+                }// function cleanConfig();
+
+                this.reloadConfig = function(config) {
+                    loadConfig(config,true);
+                    return this;
+                };
 
                 //maping some functions
                 this.restart = function() {
@@ -375,57 +442,7 @@ var ForceGraphVis =
                     return o.config.bordersLimit;
                 };
 
-                //private
-                function processConfig(o, config)
-                {
-                    o.config = {
-                        width: getProperty(config, "width", 960),
-                        height: getProperty(config, "height", 500),
-                        gravity: getProperty(config, "gravity", 0.05),
-                        charge: getProperty(config, "charge", -100),
-                        defaultRadius: getProperty(config, "defaultRadius", 6),
-                        defaultGroup: getProperty(config, "defaultGroup", 1),
-                        linkDefaultDistance: getProperty(config, "linkDefaultDistance", 30),
-                        linkMinimumDistance: getProperty(config, "linkMinimumDistance", 10),
-                        linkMaximumDistance: getProperty(config, "linkMaximumDistance", 60),
-                        bordersLimit: getProperty(config, "bordersLimit", true),
-                        nodeFillScale: getProperty(config, "nodeFillScale", d3.scale.category20()),
-                        pzoom: getProperty(config, "zoom", 1), //yes zoom is correct here!
-                        zoom: getProperty(config, "zoom", 1),
-                        minZoom: getProperty(config, "minZoom", 0.0625), //-4x
-                        maxZoom: getProperty(config, "maxZoom", 5), //5x
-                        initialZoom: getProperty(config, "initialZoom", o.zoom),
-                        linkColorScaleDomain: getProperty(config, "linkColorScaleDomain", null),
-                        linkColorScaleRange: getProperty(config, "linkColorScaleRange", null),
-                        linkColorScale: null
-                    };
-                    if (o.config.linkColorScale === null) {
-                        //Custom scale is not defined. Lets use a default linear scale.
-                        o.config.linkColorScale = d3.scale.linear();
-                        //Are custom scale domains and ranges defined in config? If not, lets use default values.
-                        if (o.config.linkColorScaleDomain !== null) {
-                            o.config.linkColorScale.domain(o.config.linkColorScaleDomain); //config domain
-                        } else {
-                            o.config.linkColorScale.domain([0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1]); //default domain
-                        }
-                        if (o.config.linkColorScaleRange !== null) {
-                            o.config.linkColorScale.range(o.config.linkColorScaleRange); //config range
-                        } else {
-                            //default range
-                            o.config.linkColorScale.range(["#0066FF", "#00CC99", "#00CC00", "#99CC00", "#FF9900", "#FF6600", "#FF3300", "#FF0000", "#B20000"]);
-                        }
-                    } else {
-                        //Custom scale in config found. Add the scale and/or if also defined in the config. 
-                        //If not we use the domain and range of the custom scale.
-                        if (o.config.linkColorScaleDomain !== null) {
-                            o.config.linkColorScale.domain(o.config.linkColorScaleDomain);
-                        }
-                        if (o.config.linkColorScaleRange !== null) {
-                            o.config.linkColorScale.range(o.config.linkColorScaleRange);
-                        }
-                    }
 
-                }
 
                 this.start = function(nodes, links) {
                     var o = this;
