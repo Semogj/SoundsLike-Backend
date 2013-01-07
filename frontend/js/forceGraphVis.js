@@ -45,6 +45,7 @@
  height - int - the canvas height. This with will be set to the html element when calling the create() method;  
  gravity - float - on default behaviour, this is the strengh which the nodes will be pulled to the gravitacional center;
  charge - float - A negative value results in node repulsion, while a positive value results in node attraction;
+ friction - float - The friction coefficient for each node. A value of 1 corresponds to a frictionless environment, while a value of 0 freezes all particles in place.   
  defaultRadius - int - The default radius in px for nodes without declared radius;
  defaultGroup - int - The default radius in px for groups without declared radius;
  linkDefaultDistance - int - The default link lenght in px (when link.value = ?);
@@ -103,7 +104,7 @@ var ForceGraphVis =
         {
             //create an object to return that will hold the layout, properties and the visualization
             create: function(pageElemSelector, config) {
-                
+
                 //NOTE: similar to the 3D ambients, we have two contextes: the physics context and the visualization context
                 //The physics context is were the elements directions are interpolated and position calculated.
                 //The visualization context is what we going to show to the user (in the HTML or SVG!)
@@ -113,55 +114,59 @@ var ForceGraphVis =
                 //physics context = layout (o.layout)
 
                 var gObj = this;  //will store the main object, this is needed to pass values for some calls
-               
+
                 //set up the layout (the physics context)
                 this.layout = d3.layout.force();
-                
-                //lets cleanup and process the config file
-                loadConfig(config);
-                
+                this.canvasSelector = pageElemSelector;
                 //element cleanup
                 $(pageElemSelector).html("");
+                this.canvas = d3.select(pageElemSelector);
+
+
 
                 this.isInitialized = false;
                 this.isRunning = false;
+
+                this.layoutNodeCharge = function(node) {
+                    return gObj.config.charge;
+                };
+                this.layoutLinkDistance = function(link) {
+                    var sourceRadius = isset(link.source.radius) ? link.source.radius : gObj.config.defaultRadius;
+                    var targetRadius = isset(link.target.radius) ? link.target.radius : gObj.config.defaultRadius;
+                    var lengthMult = issetDefault(link.lengthMult, 1);
+                    if (isset(link.value)) {
+                        //we are assuming that link.value have normalized values between 0 and 1.
+                        var value = link.value < 0 ? 0 : link.value > 1 ? 1 : link.value;
+                        return (sourceRadius + targetRadius + gObj.config.linkMinimumDistance + gObj.config.linkMaximumDistance -
+                                (gObj.config.linkMaximumDistance - gObj.config.linkMinimumDistance) * value) * lengthMult;
+                    } else {
+                        return (sourceRadius + targetRadius + gObj.config.linkDefaultDistance) * lengthMult;
+                    }
+                };
+
+                //lets cleanup and process the config file
+                loadConfig(config || {});
 
                 //private
                 function loadConfig(config, reload) {
                     //cleanup config
                     cleanConfig(config, reload);
-                    //setup layout properties based on config
-                    gObj.layout.gravity(gObj.config.gravity)
-                            .charge(gObj.config.charge)
-                            .linkDistance(function(link) {
-                        var sourceRadius = isset(link.source.radius) ? link.source.radius : gObj.config.defaultRadius;
-                        var targetRadius = isset(link.target.radius) ? link.target.radius : gObj.config.defaultRadius;
-                        var lengthMult = issetDefault(link.lengthMult, 1);
-                        if (isset(link.value)) {
-                            //we are assuming that link.value have normalized values between 0 and 1.
-                            var value = link.value < 0 ? 0 : link.value > 1 ? 1 : link.value;
-                            return (sourceRadius + targetRadius + gObj.config.linkMinimumDistance + gObj.config.linkMaximumDistance -
-                                    (gObj.config.linkMaximumDistance - gObj.config.linkMinimumDistance) * value) * lengthMult;
-                        } else {
-                            return (sourceRadius + targetRadius + gObj.config.linkDefaultDistance) * lengthMult;
-                        }
-                    })
-                            //define the size of the canvas
-                            .size([gObj.config.width, gObj.config.height]);
+
 
                     //set up the visualization
-                    gObj.canvas = d3.select(pageElemSelector).style("width", gObj.config.width + "px").style("height", gObj.config.height + "px");
-                };
+                    gObj.canvas.style("width", gObj.config.width + "px").style("height", gObj.config.height + "px");
+                }
+                ;
 
                 //private
                 function cleanConfig(config, reuse)
                 {
-
                     gObj.config = {
                         width: getProperty(config, "width", reuse ? gObj.config.width : 960),
                         height: getProperty(config, "height", reuse ? gObj.config.height : 500),
                         gravity: getProperty(config, "gravity", reuse ? gObj.config.gravity : 0.05),
                         charge: getProperty(config, "charge", reuse ? gObj.config.charge : -100),
+                        friction: getProperty(config, "friction", reuse ? gObj.config.friction : 0.9),
                         defaultRadius: getProperty(config, "defaultRadius", reuse ? gObj.config.defaultRadius : 6),
                         defaultGroup: getProperty(config, "defaultGroup", reuse ? gObj.config.defaultGroup : 1),
                         linkDefaultDistance: getProperty(config, "linkDefaultDistance", reuse ? gObj.config.linkDefaultDistance : 30),
@@ -207,7 +212,7 @@ var ForceGraphVis =
                 }// function cleanConfig();
 
                 this.reloadConfig = function(config) {
-                    loadConfig(config,true);
+                    loadConfig(config || {}, true);
                     return this;
                 };
 
@@ -443,9 +448,16 @@ var ForceGraphVis =
                 };
 
 
-
                 this.start = function(nodes, links) {
                     var o = this;
+
+                    //setup layout properties based on config
+                    o.layout.gravity(o.config.gravity)
+                            .charge(o.layoutNodeCharge)
+                            .linkDistance(o.layoutLinkDistance)
+                            .friction(o.config.friction)
+                            //define the size of the canvas
+                            .size([o.config.width, o.config.height]);
                     if (!isset(nodes)) {
                         //no paremeters, act as restart!
                         o.layout.start();
