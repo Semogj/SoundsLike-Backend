@@ -9,33 +9,34 @@ $config = array(
     'dbPassword' => 'root123!',
     'dbName' => 'virus_as',
     'logFile' => 'logs/logFile.txt',
-    'debug' => true
+    'debug' => true, //for error_reporting();   
+    'loglevel' => 1 //for log file: DEBUG = 1, INFO = 2, WARNING = 3, ERROR = 4, FATAL = 5
 );
 
 //constant to prevent direct script access
-define('VIRUS',1);
+define('VIRUS', 1);
 
 require_once 'libs/core.php';
 
+define("RESPONSE_APP_NAME", 'virus');
 
+define("MINIMUM_PHP_VERSION", "5.3.0");
+define("HTML_200_OK", 200);
+define("HTML_201_CREATED", 201);
+define("HTML_202_ACCEPTED", 202);
+define("HTML_400_BAD_REQUEST", 400);
+define("HTML_401_UNAUTHORIZED", 401);
+define("HTML_403_FORBIDDEN", 403);
+define("HTML_404_NOT_FOUND", 404);
+define("HTML_405_METHOD_NOT_ALLOWED", 405);
+define("HTML_406_NOT_ACCEPTABLE", 406);
+define("HTML_500_INTERNAL_SERVER_ERROR", 500);
+define("HTML_501_NOT_IMPLEMENTED", 501);
+define("HTML_502_SERVICE_UNAVAILABLE", 503);
 
-const RESPONSE_APP_NAME = 'virus';
-const MINIMUM_PHP_VERSION = "5.3.0";
-const HTML_200_OK = 200;
-const HTML_201_CREATED = 201;
-const HTML_202_ACCEPTED = 202;
-const HTML_400_BAD_REQUEST = 400;
-const HTML_401_UNAUTHORIZED = 401;
-const HTML_403_FORBIDDEN = 403;
-const HTML_404_NOT_FOUND = 404;
-const HTML_405_METHOD_NOT_ALLOWED = 405;
-const HTML_406_NOT_ACCEPTABLE = 406;
-const HTML_500_INTERNAL_SERVER_ERROR = 500;
-const HTML_501_NOT_IMPLEMENTED = 501;
-const HTML_502_SERVICE_UNAVAILABLE = 503;
-const API_DEFAULT_RESULT_LIMIT = 100; //results by page
-const API_DEFAULT_RESULT_PAGE = 1; //default result page
-const LOG_LEVEL = \KLogger::DEBUG;
+define("API_DEFAULT_RESULT_LIMIT", 100);
+define("API_DEFAULT_RESULT_PAGE", 1);
+define("API_MAX_LIMIT", 1000);
 
 const CONTROLLERS_FOLDER = 'controllers/';
 const CONTROLLERS_NAMESPACE = 'VIRUS\\webservice\\controllers\\';
@@ -45,7 +46,7 @@ const SERVICES_FOLTER = 'services/';
 const SERVICES_NAMESPACE = 'VIRUS\\webservice\\services\\';
 const VIEWS_FOLDER = 'views/';
 
-
+define("LOG_LEVEL", $config['loglevel']);
 define('ROOT_DIRECTORY', dirname(__FILE__) . '/');
 
 
@@ -55,7 +56,6 @@ date_default_timezone_set('Europe/Lisbon');
 //0 = disable reporting
 error_reporting(isset($config['debug']) && $config['debug'] === true || $config['debug'] === 1 ? -1 : 0);
 header("X-Powered-By: Y0URMaM.NET");
-
 
 function includeSafe($filename)
 {
@@ -70,7 +70,7 @@ function includeSafe($filename)
 
 function showErrorResponse($httpStatus, $title, $msg, $debug = '', $die = true)
 {
-    CoreVIRUS::displayErrorResponse($httpStatus, $title, $msg, $debug, $die);    
+    CoreVIRUS::displayErrorResponse($httpStatus, $title, $msg, $debug, $die);
 }
 
 ob_start();
@@ -97,8 +97,7 @@ try
 } catch (\PDOException $e)
 {
     $logger->LogFatal("Database connection error: " . $e);
-    showErrorResponse(HTML_502_SERVICE_UNAVAILABLE, 'Database connection error', 
-            'It seems that the database is busy for us (or just anti-social)! Try again later.');
+    showErrorResponse(HTML_502_SERVICE_UNAVAILABLE, 'Database connection error', 'It seems that the database is busy for us (or just anti-social)! Try again later.');
 }
 
 CoreVIRUS::registerDB($db);
@@ -130,7 +129,8 @@ if (!includeSafe(CONTROLLERS_FOLDER . $controllerSegment . '.php'))
 {
     $logger->LogWarn("Unknown controller specified: $controllerSegment");
     showErrorResponse(HTML_404_NOT_FOUND, 'API Not Found', 'Please specify a valid API and Service!');
-}else{
+} else
+{
     $path = CONTROLLERS_FOLDER . $controllerSegment . '.php';
     $logger->LogDebug("Loaded controller file $path.");
 }

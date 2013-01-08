@@ -38,9 +38,9 @@ if (isset($response) && is_object($response) && $response instanceof WebserviceR
     } else
     {
         header('Content-type: text/xml');
-        $output = \getArrayAsXML($outputArr);
-        $statusHttp = \getStatusCode($status);
-        echo '<', RESPONSE_APP_NAME, " status=\"$status\" code=\"$statusHttp\">'
+        $output = $response->getOutputArrayAsXML();
+        $statusHttp = getStatusCode($status);
+        echo '<', RESPONSE_APP_NAME, " status=\"$status\" code=\"$statusHttp\">
                 $output
         </", RESPONSE_APP_NAME, '>';
     }

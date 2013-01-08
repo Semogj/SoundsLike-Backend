@@ -16,19 +16,19 @@ if (!defined("VIRUS"))
 class WebserviceCollection
 {
 
-    private $resultArray, $size, $totalSize, $perPage, $currentPage, $totalPages, $resourseLabel;
+    private $resultArray, $size, $totalSize, $limit, $currentPage, $totalPages, $resourseLabel;
 
-    public function __construct($resourseLabel, $resultArray, $total = null, $perPage = null, $page = null)
+    public function __construct($resourseLabel, array $resultArray, $total = null, $limitPerPage = null, $page = null)
     {
-        $this->resourseLabel = $resourseLabel;
-        $this->resultArray = $resultArray;
-        $this->size = count($resultArray);
-        $this->totalSize = $total;
-        $this->perPage = $perPage;
-        $this->currentPage = $page;
-        if ($total !== null && $perPage !== null)
+        $this->resourseLabel = singular($resourseLabel);
+        $this->resultArray   = $resultArray;
+        $this->size          = count($resultArray);
+        $this->totalSize     = $total;
+        $this->limit         = $limitPerPage;
+        $this->currentPage   = $page;
+        if ($total !== null && $limitPerPage !== null)
         {
-            $tpages = $perPage != 0 ? $total / $perPage : 0;
+            $tpages           = $limitPerPage != 0 ? $total / $limitPerPage : 0;
             $this->totalPages = is_float($tpages) ? intval($tpages, 10) + 1 : $tpages;
         } else
         {
@@ -53,7 +53,7 @@ class WebserviceCollection
 
     public function getPerPage()
     {
-        return $this->perPage;
+        return $this->limit;
     }
 
     public function getCurrentPage()
@@ -71,58 +71,63 @@ class WebserviceCollection
         return $this->resourseLabel;
     }
 
-    const XML_LABEL_COUNT = 1;
-    const XML_LABEL_PAGE = 2;
-    const XML_LABEL_PERPAGE = 3;
-    const XML_LABEL_TOTAL = 4;
-    const XML_LABEL_TOTALPAGES = 5;
+    const XML_LABEL_COUNT       = 1;
+    const XML_LABEL_PAGE        = 2;
+    const XML_LABEL_LIMIT     = 3;
+    const XML_LABEL_TOTAL       = 4;
+    const XML_LABEL_TOTALPAGES  = 5;
+    const XML_LALEL_NODES_COUNT = 6;
+    const XML_LABEL_INT_PREFIX  = 7;
 
-    private static $labels = array(self::XML_LABEL_COUNT => 'size',
-        self::XML_LABEL_PAGE => 'page', self::XML_LABEL_PERPAGE => 'perPage',
-        self::XML_LABEL_TOTAL => 'totalSize', self::XML_LABEL_TOTALPAGES => 'totalPages'
+    private static $labels = array(self::XML_LABEL_COUNT      => 'size',
+        self::XML_LABEL_PAGE       => 'page', self::XML_LABEL_LIMIT      => 'limit',
+        self::XML_LABEL_TOTAL      => 'totalsize', self::XML_LABEL_TOTALPAGES => 'totalpages'
     );
 
     public function getResultXML($xmlCallback, array $xmlLabels = array())
     {
-        if (is_callable($xmlCallback))
-        {
-            throw new \BadMethodCallException("The \$xmlCallback is not a valid callable function.");
-        }
+
         $labels = self::$labels;
         if (!empty($xmlLabels))
         {
-            $labels = array_merge($labels, $xmlLabels);
+//            $labels = array_merge($labels, $xmlLabels);
+              $labels = $xmlLabels + $labels;
         }
-        $sufix = " {$labels[self::XML_LABEL_COUNT]}=\"$this->count\"";
-        if ($this->page !== null)
+        $sufix  = " {$labels[self::XML_LABEL_COUNT]}=\"{$this->size}\"";
+        if ($this->currentPage !== null)
         {
-            $sufix .= " {$labels[self::XML_LABEL_PAGE]}=\"$this->page\"";
+            $sufix .= " {$labels[self::XML_LABEL_PAGE]}=\"{$this->currentPage}\"";
         }
-        if ($this->perPage !== null)
+        if ($this->limit !== null)
         {
-            $sufix .= " {$labels[self::XML_LABEL_PERPAGE]}=\"$this->perPage\"";
+            $sufix .= " {$labels[self::XML_LABEL_LIMIT]}=\"{$this->limit}\"";
         }
-        if ($this->total !== null)
+        if ($this->totalSize !== null)
         {
-            $sufix .= " {$labels[self::XML_LABEL_TOTAL]}=\"$this->total\"";
+            $sufix .= " {$labels[self::XML_LABEL_TOTAL]}=\"{$this->totalSize}\"";
         }
         if ($this->totalPages !== null)
         {
-            $sufix .= " {$labels[self::XML_LABEL_TOTALPAGES]}=\"$this->totalPages\"";
+            $sufix .= " {$labels[self::XML_LABEL_TOTALPAGES]}=\"{$this->totalPages}\"";
         }
-        $valueTmp = null;
-        if (is_array($this->resulArray))
-            foreach ($this->resulArray as $entry)
+        $value = '';
+//        var_dump($sufix);
+
+        if (is_array($this->resultArray))
+        {
+            foreach ($this->resultArray as $entry)
             {
-                $valueTmp .= "<{$this->resourseLabel}>"
-                        . is_object($entry) && $entry instanceof WebserviceCollection ?
-                        $entry->getResultXML($xmlCallback, $xmlLabels) : $xmlCallback($entry)
+
+                $value .= "<{$this->resourseLabel}>"
+                        . (is_object($entry) && $entry instanceof WebserviceCollection ?
+                                $entry->getResultXML($xmlCallback, $xmlLabels) : $xmlCallback($entry, $xmlLabels))
                         . "</{$this->resourseLabel}>";
             }
+        }
         else
-            $valueTmp = htmlspecialchars($this->resulArray, null, 'UTF-8');
-        $key = plural($this->resourceTag);
-        return "<{$key}{$sufix}>$valueTmp</$key>";
+            $value = htmlspecialchars($this->resultArray, null, 'UTF-8');
+        $key   = strtolower(plural($this->resourseLabel));
+        return "<{$key}{$sufix}>$value</$key>";
     }
 
 }

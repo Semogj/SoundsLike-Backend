@@ -84,7 +84,7 @@ abstract class ModelFilter
         $field = trim($field);
         $USF = $field . $this->counter++; //UniqueStatementField
         $this->conditions = $field . ' ' . $conditional . ' ' . self::statementFieldIdentifier . $USF . ' ';
-        $this->varArray[$USF] = $value;
+        $this->varArray[$USF] = "$value";
     }
 
     public function getStatementQuery()

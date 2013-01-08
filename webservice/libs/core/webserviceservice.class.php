@@ -41,7 +41,7 @@ abstract class WebserviceService
      */
     public function processRequest(WebserviceRequest $request)
     {
-        
+        $logger = CoreVIRUS::getLogger();
         $requestMethod = $request->getMethod();
         try
         {
