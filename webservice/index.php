@@ -39,11 +39,11 @@ define("API_DEFAULT_RESULT_PAGE", 1);
 define("API_MAX_LIMIT", 1000);
 
 const CONTROLLERS_FOLDER = 'controllers/';
-const CONTROLLERS_NAMESPACE = 'VIRUS\\webservice\\controllers\\';
+const CONTROLLERS_NAMESPACE = 'VIRUS\\webservice\\controllers';
 const MODELS_FOLDER = 'models/';
-const MODELS_NAMESPACE = 'VIRUS\\webservice\\models\\';
+const MODELS_NAMESPACE = 'VIRUS\\webservice\\models';
 const SERVICES_FOLTER = 'services/';
-const SERVICES_NAMESPACE = 'VIRUS\\webservice\\services\\';
+const SERVICES_NAMESPACE = 'VIRUS\\webservice\\services';
 const VIEWS_FOLDER = 'views/';
 
 define("LOG_LEVEL", $config['loglevel']);
@@ -63,10 +63,12 @@ function includeSafe($filename)
     if (is_file($filename) && is_readable($filename))
     {
         //for capturing the warning output, case cannot be included
-        $result = include $filename;
+        $result = include_once $filename;
     }
     return $result;
 }
+
+CoreVIRUS::registerAutoloader();
 
 function showErrorResponse($httpStatus, $title, $msg, $debug = '', $die = true)
 {
@@ -134,7 +136,7 @@ if (!includeSafe(CONTROLLERS_FOLDER . $controllerSegment . '.php'))
     $path = CONTROLLERS_FOLDER . $controllerSegment . '.php';
     $logger->LogDebug("Loaded controller file $path.");
 }
-$controllerSegment = CONTROLLERS_NAMESPACE . ucfirst($controllerSegment);
+$controllerSegment = CONTROLLERS_NAMESPACE . '\\' . ucfirst($controllerSegment);
 if (!class_exists($controllerSegment))
 {
     $logger->LogFatal("Found the controller file, but we were unable to load the requested controller '$controllerSegment' class.");

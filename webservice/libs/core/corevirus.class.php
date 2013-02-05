@@ -2,8 +2,9 @@
 
 namespace VIRUS\webservice;
 
-if(!defined("VIRUS")){
-    die("You are not allowed here!");    
+if (!defined("VIRUS"))
+{
+    die("You are not allowed here!");
 }
 
 /**
@@ -69,8 +70,12 @@ class CoreVIRUS
      */
     public static function loadModel($model)
     {
+//        if($model === '*'){
+//            self::loadAllModels();
+//            return;
+//        }
         $model = strtolower(trim($model));
-        $className = MODELS_NAMESPACE . ucfirst($model . "model");
+        $className = MODELS_NAMESPACE . '\\' . ucfirst($model . "model");
 
         if (array_key_exists($className, self::$loadedModels))
         {
@@ -93,6 +98,34 @@ class CoreVIRUS
         return false;
     }
 
+    public static function registerAutoloader()
+    {
+        spl_autoload_register(function ($class) {
+
+                    $class = parseClassname($class, true);
+//                    die(print_r($class, true));
+//                    die()
+//                    echo $class->namespace . '<br />';
+//                    echo MODELS_NAMESPACE . '<br />';
+                    switch ($class->namespace)
+                    {
+                        case SERVICES_NAMESPACE:
+                            return includeSafe(ROOT_DIRECTORY . SERVICES_FOLTER . strtolower($class->classname) . '.php');
+                        case MODELS_NAMESPACE:
+//                            die( ROOT_DIRECTORY . MODELS_FOLDER . strtolower($class->classname) . '.php');
+                            return includeSafe(ROOT_DIRECTORY . MODELS_FOLDER . strtolower($class->classname) . '.php');
+                        case CONTROLLERS_NAMESPACE:
+                            return includeSafe(ROOT_DIRECTORY . CONTROLLERS_FOLDER . strtolower($class->classname) . '.php');
+                        default:
+                            return false;
+                    }
+                });
+    }
+
+//    private static function loadAllModels(){
+//        
+//    }
+
     /**
      * 
      * @param String $service
@@ -102,7 +135,7 @@ class CoreVIRUS
     public static function loadService($service, $version = 1)
     {
         $service = strtolower(trim($service));
-        $className = SERVICES_NAMESPACE . ucfirst($service . "Service");
+        $className = SERVICES_NAMESPACE .  '\\' . ucfirst($service . "Service");
 
         $filename = ROOT_DIRECTORY . SERVICES_FOLTER . "/v{$version}/{$service}.php";
         //is it already loaded?

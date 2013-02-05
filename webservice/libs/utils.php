@@ -584,7 +584,7 @@ function validate_pos_int($theValue, $theDefault, $base = 10)
 function is_valid_url($theString)
 {
     return preg_match(
-                    '/^
+            '/^
 (# Scheme
  [a-z][a-z0-9+\-.]*:
  (# Authority & path
@@ -724,4 +724,31 @@ if (!function_exists('plural'))
         return $result;
     }
 
+}
+
+function getClassNamespace($name)
+{
+    return substr($name, 0, strrpos($name, '\\'));
+}
+
+function parseClassname($name, $asObj = false)
+{
+    if ($asObj)
+    {
+        $ret = new stdClass;
+        $ret->classname = substr(strrchr($name,'\\'),1);
+        $ret->namespace = substr($name, 0, strrpos($name, '\\'));
+    } else
+    {
+        $ret = array(
+            'classname' => substr(strrchr($name,'\\'),1),
+            'namespace' => substr($name, 0, strrpos($name, '\\'))
+        );
+    }
+    return $ret;
+}
+
+function getClassName($name)
+{
+    return substr(strrchr($name,'\\'),1);
 }

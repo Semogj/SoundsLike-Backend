@@ -96,6 +96,9 @@ abstract class ModelFilter
     {
         return $this->varArray;
     }
+    public function isEmpty(){
+        return count($this->varArray) === 0;
+    }
 
 }
 
