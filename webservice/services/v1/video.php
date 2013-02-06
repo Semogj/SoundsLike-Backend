@@ -13,7 +13,7 @@ use VIRUS\webservice\WebserviceResponse;
 use VIRUS\webservice\WebserviceCollection;
 use VIRUS\webservice\models\VideoModel;
 use VIRUS\webservice\OkWebserviceResponse;
-use VIRUS\webservice\models\SoundSegmentModel as SoundSegmentModel;
+use VIRUS\webservice\models\SoundSegmentModel;
 
 class VideoService extends WebserviceService
 {
@@ -22,7 +22,7 @@ class VideoService extends WebserviceService
      *
      * @var VideoModel 
      */
-    private $videoModel;
+//    private $videoModel;
 
     public function __construct($serviceName)
     {
@@ -32,7 +32,7 @@ class VideoService extends WebserviceService
     public function beforeRequest(WebserviceRequest $request)
     {
 
-        $this->videoModel = new \VIRUS\webservice\models\VideoModel();
+//        $this->videoModel = new \VIRUS\webservice\models\VideoModel();
     }
 
     public function get(WebserviceRequest $request)
@@ -48,13 +48,12 @@ class VideoService extends WebserviceService
         $output = null;
         //Checking if the first segment, after the service segment is an integer
         // if its an integer, it means we are selecting a specific entry of the service
-        $idSegment = $request->getRawSegmentAsInt(1, false);
-        if ($idSegment === false)
+        $idVideoSegment = $request->getRawSegmentAsInt(1, false);
+        if ($idVideoSegment === false)
         {
-            $resultArr = $this->videoModel->get($limit, $offsetPage);
+            $resultArr = VideoModel::get($limit, $offsetPage);
             //var_export($resultArr);
-            $resultResource = new WebserviceCollection($this->getServiceName(), $resultArr, null, $limit, $offsetPage);
-            $output = new OkWebserviceResponse($request->getAcceptType(), HTML_200_OK, array($resultResource));
+            $output = new WebserviceCollection($this->getServiceName(), $resultArr, null, $limit, $offsetPage);
         } else
         {
 
@@ -62,19 +61,31 @@ class VideoService extends WebserviceService
             switch ($request->getRawSegment(2, null))
             {
                 case 'soundsegment':
-
-                    $resultArr = SoundSegmentModel::getFiltered(SoundSegmentModel::filter()->byVideoId($idSegment), $limit,$offsetPage);
-//                    $total = null; //fetch total here
-                    $resultRes = new WebserviceCollection($this->getServiceName(), $resultArr);
-                    $output = new OkWebserviceResponse($request->getAcceptType(), 200, array($resultRes));
+                    $idAudioSegment = $request->getRawSegmentAsInt(3, false);
+                    if ($idAudioSegment === false)
+                    {
+                        $resultArr = SoundSegmentModel::getFiltered(SoundSegmentModel::filter()->byVideoId($idVideoSegment), $limit, $offsetPage);
+                        $output = new WebserviceCollection($this->getServiceName(), $resultArr, null, $limit, $offsetPage);                    
+                    } else
+                    {//we have a id segment
+                        switch ($request->getRawSegment(4, null))
+                        {
+                            case 'similar': 
+                                $resultArr = SoundSegmentModel::getMostSimilarInVideo($idAudioSegment, $idVideoSegment, $limit, $offsetPage);
+                                $output = new WebserviceCollection($this->getServiceName(), $resultArr, null, $limit, $offsetPage);
+                                break;
+                            default:
+                                $resultArr = SoundSegmentModel::getSingle($idAudioSegment);
+                                $output = new WebserviceCollection($this->getServiceName(), $resultArr);
+                        }
+                    }
                     break;
                 default:
-                    $resultArr = $this->videoModel->getSingle($idSegment);
-                    $resultRes = new WebserviceCollection($this->getServiceName(), $resultArr);
-                    $output = new OkWebserviceResponse($request->getAcceptType(), 200, array($resultRes));
+                    $resultArr = VideoModel::getSingle($idVideoSegment);
+                    $output = new WebserviceCollection($this->getServiceName(), $resultArr);
             }
         }
-        return $output;
+        return new OkWebserviceResponse($request->getAcceptType(), 200, array($output));
     }
 
     public function post(WebserviceRequest $request)

@@ -96,6 +96,7 @@ $db = null;
 try
 {
     $db = new \PDO("{$config['dbDriver']}:host={$config['dbHost']};dbname={$config['dbName']}", $config['dbUser'], $config['dbPassword']);
+    $db->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 } catch (\PDOException $e)
 {
     $logger->LogFatal("Database connection error: " . $e);
@@ -150,37 +151,22 @@ if (!($controller instanceof controllers\Controller))
 }
 CoreVIRUS::setController($controller);
 
+try{
 $resource = $uri->getSegment(1, NULL);
 if ($resource === NULL)
     $controller->_default();
 else
     $controller->_remap($resource, $uri->getSegmentArray(2));
 
+}catch(PDOException $ex){
+    $error = 'Fatal error: ' . $ex;
+    $logger->LogFatal($error);
+    showErrorResponse(HTML_500_INTERNAL_SERVER_ERROR, 'Database Error', 'Something went wrong with the connection to the database.',$error);
+}catch(\Exception $ex){
+    $error = 'Fatal error: ' . $ex;
+    $logger->LogFatal($error);
+    showErrorResponse(HTML_500_INTERNAL_SERVER_ERROR, 'Server General Error', 'Something went wrong with the server.',$error);
+}
 
 
-
-//
-//$webservice = new \Slim\Slim();
-//includeSafe("services/video.php");
-//
-//
-////echo "hi";
-//
-//$webservice->get('/api/v:version/:service', function($version, $service) use ($webservice, $logger) {
-//            if (includeSafe("services/$service.php"))
-//                $logger->LogWarn("The requested service $service was not found!");
-//            $function = "services\{$service}Webservice";
-//            if (function_exists($function))
-//            {
-//                call_user_func($function, array($webservice, "/api/$service/"));
-//            } else
-//            {
-//                $logger->LogError("The requested service $service file was found but the $function function is missing!");
-//            }
-//
-//            $webservice->pass();
-//        });
-//            echo "hi $name!";
-//        });
-//$webservice->run();
 ?>

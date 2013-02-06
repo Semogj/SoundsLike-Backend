@@ -65,9 +65,9 @@ class SoundSegmentService extends WebserviceService
             {
                 case 'similar':
                 
-                    $resultArr = array(); //fetch result
-                    $total = null; //fetch total here
-                    $resultRes = new ResultResource('article', $request, $total, $limit, $offsetPage);
+                    $resultArr = SoundSegmentModel::getMostSimilar($idSegment, $limit, $offsetPage); //fetch result
+//                    $total = null; //fetch total here
+                    $resultRes = new WebserviceCollection($this->getServiceName(), $resultArr);
                     $output = new OkWebserviceResponse($request->getAcceptType(), 200, array($resultRes));
                     break;
                 default:

@@ -8,16 +8,21 @@ use VIRUS\webservice\models\ModelFilter;
 
 class SoundSegmentModel implements DatabaseModel
 {
+    //table soundSegment
 
     const FIELD_SOUND_ID = "idSoundSegment";
     const FIELD_SOUND_START = "start";
     const FIELD_SOUND_END = 'end';
     const FIELD_VIDEO_ID = 'videoId';
     const TABLE_SOUND = 'SoundSegment';
+    //table video
     const TABLE_VIDEO = 'Video';
     const FIELD_VIDEO_ID_VIDEO = 'idVideo';
     const FIELD_VIDEO_TEXTID = 'textId';
     const FIELD_VIDEO_TITLE = 'title';
+    //view similarities (merges soundSimilarities and soundsegment tables)
+    const VIEW_SIM = 'SoundSegmentSimilarities';
+    
 
     private static $filter;
 
@@ -70,27 +75,72 @@ class SoundSegmentModel implements DatabaseModel
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    /* Get the most similar segments from a specific movie 
-      Get the most similars 
+    /* Get the most similars 
       SELECT soundSegmentId1, soundSegmentId2, value
       FROM SoundSimilarity, (SELECT idSoundSegment FROM SoundSegment WHERE videoId = [VIDEO_ID] ) as table2
       WHERE soundSegmentId1 = table2.idSoundSegment OR soundSegmentId2 = table2.idSoundSegment
       ORDER BY value DESC
-      
-      
- SELECT soundSegmentId1, soundSegmentId2, value
-      FROM SoundSimilarity, (SELECT idSoundSegment FROM SoundSegment WHERE videoId = [VIDEO_ID] AND idSoundSegment = [SEGMENT_ID] ) as table2
-      WHERE soundSegmentId1 = table2.idSoundSegment OR soundSegmentId2 = table2.idSoundSegment
+
+
+      SELECT id1, start1, end1, videoId1, id2, start2, end2, videoId2, value
+      FROM SoundSegmentSimilarities
+      WHERE videoId1 = [VIDEO_ID]
+      AND videoId2 = [VIDEO_ID]
+      AND (id1 = [SEGMENT_ID] OR id2 = [SEGMENT_ID])
       ORDER BY value DESC
 
-      
- SELECT soundSegmentId1, soundSegmentId2, value
+
+
+
+      SELECT soundSegmentId1, soundSegmentId2, value
       FROM SoundSimilarity, (SELECT idSoundSegment FROM SoundSegment WHERE idSoundSegment = [SEGMENT_ID] ) as table2
       WHERE soundSegmentId1 = table2.idSoundSegment OR soundSegmentId2 = table2.idSoundSegment
       ORDER BY value DESC
-     */
-    
 
+      CREATE VIEW SoundSegmentSimilarities AS
+      SELECT s1.idSoundSegment as id1,
+      s1.start as start1,
+      s1.end as end1,
+      s1.videoId as videoId1 ,
+      s2.idSoundSegment as id2,
+      s2.start as start2,
+      s2.end as end2,
+      s2.videoId as videoId2,
+      s.value as value,
+      s.lastUpdate as lastUpdate
+      FROM SoundSimilarity s, SoundSegment as s1, SoundSegment as s2
+      WHERE s.soundSegmentId1 = s1.idSoundSegment
+      AND s.soundSegmentId2 = s2.idSoundSegment
+      AND s.soundSegmentId1 != s.soundSegmentId2
+
+     */
+
+    public static function getMostSimilarInVideo($segmentId, $videoId, $limit = API_DEFAULT_RESULT_LIMIT, $offsetPage = API_DEFAULT_RESULT_PAGE)
+    {
+        $limit = validate_pos_int($limit, API_DEFAULT_RESULT_LIMIT);
+        $offsetPage = (validate_pos_int($offsetPage, API_DEFAULT_RESULT_PAGE) - 1) * $limit; //offset
+        $segmentId = intval($segmentId, 10);
+        $videoId = intval($videoId, 10);
+        /* @var $db \PDO */
+        $db = CoreVIRUS::getDb();
+        $sql = 'SELECT id1, start1, end1, videoId1, id2, start2, end2, videoId2, value
+                FROM SoundSegmentSimilarities
+                WHERE videoId1 = :vidid
+                AND videoId2 = :vidid
+                AND (id1 = :id OR id2 = :id)
+                ORDER BY value DESC
+                LIMIT :offset, :limit';
+
+        $statement = $db->prepare($sql);
+        $statement->bindValue(':offset', $offsetPage, PDO::PARAM_INT);
+        $statement->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $statement->bindValue(':id', $segmentId);
+        $statement->bindValue(':vidid', $videoId);
+        
+        if (!$statement->execute())
+            return false;
+        return $statement->fetchAll(PDO::FETCH_ASSOC);
+    }
     public static function getMostSimilar($segmentId, $limit = API_DEFAULT_RESULT_LIMIT, $offsetPage = API_DEFAULT_RESULT_PAGE)
     {
         $limit = validate_pos_int($limit, API_DEFAULT_RESULT_LIMIT);
@@ -98,19 +148,17 @@ class SoundSegmentModel implements DatabaseModel
         $segmentId = intval($segmentId, 10);
         /* @var $db \PDO */
         $db = CoreVIRUS::getDb();
-        $sql = 'SELECT ' . self::FIELD_SOUND_ID .
-                ', ' . self::FIELD_SOUND_START .
-                ', ' . self::FIELD_SOUND_END .
-                ', ' . self::FIELD_VIDEO_ID_VIDEO .
-                ', ' . self::FIELD_VIDEO_TITLE .
-                ' FROM ' . self::TABLE_SOUND .
-                ',' . self::TABLE_VIDEO .
-                ' WHERE ' . self::FIELD_VIDEO_ID . ' = ' . self::FIELD_VIDEO_ID_VIDEO .
-                ($filter->isEmpty() ? ' ' : ' AND ' . $filter->getStatementQuery() ) .
-                " LIMIT $offsetPage, $limit";
-
+        $sql = 'SELECT id1, start1, end1, videoId1, id2, start2, end2, videoId2, value
+                FROM SoundSegmentSimilarities
+                WHERE id1 = :id OR id2 = :id
+                ORDER BY value DESC
+                LIMIT :offset, :limit';
+        
         $statement = $db->prepare($sql);
-        if (!$statement->execute($filter->getVarArray()))
+        $statement->bindValue(':offset', $offsetPage, PDO::PARAM_INT);
+        $statement->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $statement->bindValue(':id', $segmentId);
+        if (!$statement->execute())
             return false;
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
