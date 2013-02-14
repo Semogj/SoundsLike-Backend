@@ -65,18 +65,18 @@ class VideoService extends WebserviceService
                     if ($idAudioSegment === false)
                     {
                         $resultArr = SoundSegmentModel::getFiltered(SoundSegmentModel::filter()->byVideoId($idVideoSegment), $limit, $offsetPage);
-                        $output = new WebserviceCollection($this->getServiceName(), $resultArr, null, $limit, $offsetPage);                    
+                        $output = new WebserviceCollection('soundsegment', $resultArr, null, $limit, $offsetPage);                    
                     } else
                     {//we have a id segment
                         switch ($request->getRawSegment(4, null))
                         {
                             case 'similar': 
                                 $resultArr = SoundSegmentModel::getMostSimilarInVideo($idAudioSegment, $idVideoSegment, $limit, $offsetPage);
-                                $output = new WebserviceCollection($this->getServiceName(), $resultArr, null, $limit, $offsetPage);
+                                $output = new WebserviceCollection('soundsegment', $resultArr, null, $limit, $offsetPage);
                                 break;
                             default:
                                 $resultArr = SoundSegmentModel::getSingle($idAudioSegment);
-                                $output = new WebserviceCollection($this->getServiceName(), $resultArr);
+                                $output = new WebserviceCollection('soundsegment', $resultArr);
                         }
                     }
                     break;

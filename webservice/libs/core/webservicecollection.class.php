@@ -13,7 +13,7 @@ if (!defined("VIRUS"))
  * collection and allowing to add aditional information.
  * 
  */
-class WebserviceCollection
+class WebserviceCollection //extends JsonSerializable    --- this class is PHP5.4 feature...
 {
 
     private $resultArray, $size, $totalSize, $limit, $currentPage, $totalPages, $resourseLabel;
@@ -21,14 +21,14 @@ class WebserviceCollection
     public function __construct($resourseLabel, array $resultArray, $total = null, $limitPerPage = null, $page = null)
     {
         $this->resourseLabel = singular($resourseLabel);
-        $this->resultArray   = $resultArray;
-        $this->size          = count($resultArray);
-        $this->totalSize     = $total;
-        $this->limit         = $limitPerPage;
-        $this->currentPage   = $page;
+        $this->resultArray = $resultArray;
+        $this->size = count($resultArray);
+        $this->totalSize = $total;
+        $this->limit = $limitPerPage;
+        $this->currentPage = $page;
         if ($total !== null && $limitPerPage !== null)
         {
-            $tpages           = $limitPerPage != 0 ? $total / $limitPerPage : 0;
+            $tpages = $limitPerPage != 0 ? $total / $limitPerPage : 0;
             $this->totalPages = is_float($tpages) ? intval($tpages, 10) + 1 : $tpages;
         } else
         {
@@ -71,17 +71,17 @@ class WebserviceCollection
         return $this->resourseLabel;
     }
 
-    const XML_LABEL_COUNT       = 1;
-    const XML_LABEL_PAGE        = 2;
-    const XML_LABEL_LIMIT     = 3;
-    const XML_LABEL_TOTAL       = 4;
-    const XML_LABEL_TOTALPAGES  = 5;
+    const XML_LABEL_COUNT = 1;
+    const XML_LABEL_PAGE = 2;
+    const XML_LABEL_LIMIT = 3;
+    const XML_LABEL_TOTAL = 4;
+    const XML_LABEL_TOTALPAGES = 5;
     const XML_LALEL_NODES_COUNT = 6;
-    const XML_LABEL_INT_PREFIX  = 7;
+    const XML_LABEL_INT_PREFIX = 7;
 
-    private static $labels = array(self::XML_LABEL_COUNT      => 'size',
-        self::XML_LABEL_PAGE       => 'page', self::XML_LABEL_LIMIT      => 'limit',
-        self::XML_LABEL_TOTAL      => 'totalsize', self::XML_LABEL_TOTALPAGES => 'totalpages'
+    private static $labels = array(self::XML_LABEL_COUNT => 'size',
+        self::XML_LABEL_PAGE => 'page', self::XML_LABEL_LIMIT => 'limit',
+        self::XML_LABEL_TOTAL => 'totalsize', self::XML_LABEL_TOTALPAGES => 'totalpages'
     );
 
     public function getResultXML($xmlCallback, array $xmlLabels = array())
@@ -91,9 +91,9 @@ class WebserviceCollection
         if (!empty($xmlLabels))
         {
 //            $labels = array_merge($labels, $xmlLabels);
-              $labels = $xmlLabels + $labels;
+            $labels = $xmlLabels + $labels;
         }
-        $sufix  = " {$labels[self::XML_LABEL_COUNT]}=\"{$this->size}\"";
+        $sufix = " {$labels[self::XML_LABEL_COUNT]}=\"{$this->size}\"";
         if ($this->currentPage !== null)
         {
             $sufix .= " {$labels[self::XML_LABEL_PAGE]}=\"{$this->currentPage}\"";
@@ -126,8 +126,30 @@ class WebserviceCollection
         }
         else
             $value = htmlspecialchars($this->resultArray, null, 'UTF-8');
-        $key   = strtolower(plural($this->resourseLabel));
+        $key = strtolower(plural($this->resourseLabel));
         return "<{$key}{$sufix}>$value</$key>";
+    }
+
+    public function jsonSerialize()
+    {
+        $res =  array('videos' => $this->resultArray);
+        if ($this->currentPage !== null)
+        {
+            $res[$labels[self::XML_LABEL_PAGE]] = $this->currentPage;
+        }
+        if ($this->limit !== null)
+        {
+            $res[$labels[self::XML_LABEL_LIMIT]] = $this->limit;
+        }
+        if ($this->totalSize !== null)
+        {
+            $res[$labels[self::XML_LABEL_TOTAL]] = $this->totalSize;
+        }
+        if ($this->totalPages !== null)
+        {
+            $res[$labels[self::XML_LABEL_TOTALPAGES]] = $this->totalPages;
+        }
+        return $res;
     }
 
 }

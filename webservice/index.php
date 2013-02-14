@@ -37,6 +37,8 @@ define("HTML_502_SERVICE_UNAVAILABLE", 503);
 define("API_DEFAULT_RESULT_LIMIT", 100);
 define("API_DEFAULT_RESULT_PAGE", 1);
 define("API_MAX_LIMIT", 1000);
+define("API_RESPONSE_TYPES", "xml:json");
+define("API_DEFAULT_RESPONSE_TYPE", "xml");
 
 const CONTROLLERS_FOLDER = 'controllers/';
 const CONTROLLERS_NAMESPACE = 'VIRUS\\webservice\\controllers';
@@ -48,7 +50,8 @@ const VIEWS_FOLDER = 'views/';
 
 define("LOG_LEVEL", $config['loglevel']);
 define('ROOT_DIRECTORY', dirname(__FILE__) . '/');
-
+// The name of THIS file
+define('SELF', pathinfo(__FILE__, PATHINFO_BASENAME));
 
 date_default_timezone_set('Europe/Lisbon');
 
@@ -92,26 +95,23 @@ if (version_compare(PHP_VERSION, MINIMUM_PHP_VERSION, '<='))
     showErrorResponse(HTML_500_INTERNAL_SERVER_ERROR, 'Internal Server Error', 'Shit just happened!', "Server PHP 5.3.0 version or higher is required!");
 }
 
-$db = null;
 try
 {
     $db = new \PDO("{$config['dbDriver']}:host={$config['dbHost']};dbname={$config['dbName']}", $config['dbUser'], $config['dbPassword']);
     $db->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+    CoreVIRUS::registerDB($db);
 } catch (\PDOException $e)
 {
     $logger->LogFatal("Database connection error: " . $e);
     showErrorResponse(HTML_502_SERVICE_UNAVAILABLE, 'Database connection error', 'It seems that the database is busy for us (or just anti-social)! Try again later.');
 }
-
-CoreVIRUS::registerDB($db);
 $logger->LogDebug("Database connection established and registered.");
 
 $uri = null;
-
 try
 {
     $uri = URI::getInstance();
-} catch (Exception $e)
+} catch (\Exception $e)
 {
     $logger->LogWarn("Error found while loading URI class: " . $e);
     showErrorResponse(HTML_400_BAD_REQUEST, 'Bad Request', 'The request has invalid characters');
@@ -151,22 +151,22 @@ if (!($controller instanceof controllers\Controller))
 }
 CoreVIRUS::setController($controller);
 
-try{
-$resource = $uri->getSegment(1, NULL);
-if ($resource === NULL)
-    $controller->_default();
-else
-    $controller->_remap($resource, $uri->getSegmentArray(2));
-
-}catch(PDOException $ex){
+try
+{
+    $resource = $uri->getSegment(1, NULL);
+    if ($resource === NULL)
+        $controller->_default();
+    else
+        $controller->_remap($resource, $uri->getSegmentArray(2));
+} catch (PDOException $ex)
+{
     $error = 'Fatal error: ' . $ex;
     $logger->LogFatal($error);
-    showErrorResponse(HTML_500_INTERNAL_SERVER_ERROR, 'Database Error', 'Something went wrong with the connection to the database.',$error);
-}catch(\Exception $ex){
+    showErrorResponse(HTML_500_INTERNAL_SERVER_ERROR, 'Database Error', 'Something went wrong with the connection to the database.', $error);
+} catch (\Exception $ex)
+{
     $error = 'Fatal error: ' . $ex;
     $logger->LogFatal($error);
-    showErrorResponse(HTML_500_INTERNAL_SERVER_ERROR, 'Server General Error', 'Something went wrong with the server.',$error);
+    showErrorResponse(HTML_500_INTERNAL_SERVER_ERROR, 'Server General Error', 'Something went wrong with the server.', $error);
 }
-
-
 ?>

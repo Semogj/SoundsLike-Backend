@@ -21,3 +21,4 @@ require_once 'core/webserviceservice.class.php';
 require_once 'core/uri.class.php';
 require_once 'utils.php';
 require_once 'KLogger.php';
+require_once 'xml2json/xml2json.php';
