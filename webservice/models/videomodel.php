@@ -15,9 +15,7 @@ class VideoModel implements DatabaseModel
     const FIELD_GENRES   = 'genres';
     const FIELD_ACTORS   = 'actors';
     const FIELD_YEAR     = 'year';
-    const TABLE_VIDEO    = "Video";
-
-    private static $filter;
+    const TABLE_USER    = "Video";
 
     public static function filter()
     {
@@ -31,7 +29,7 @@ class VideoModel implements DatabaseModel
 
         /* @var $db \PDO */
         $db     = CoreVIRUS::getDb();
-        $result = $db->query('SELECT *  FROM ' . self::TABLE_VIDEO . " LIMIT $offsetPage, $limit");
+        $result = $db->query('SELECT *  FROM ' . self::TABLE_USER . " LIMIT $offsetPage, $limit");
 
         return $result ? $result->fetchAll(PDO::FETCH_ASSOC) : false;
     }
@@ -45,7 +43,7 @@ class VideoModel implements DatabaseModel
         /* @var $db \PDO */
         $db        = CoreVIRUS::getDb();
         $where     = $filter->getStatementQuery();
-        $statement = $db->prepare('SELECT *  FROM ' . self::TABLE_VIDEO . " WHERE $where LIMIT $offsetPage, $limit");
+        $statement = $db->prepare('SELECT *  FROM ' . self::TABLE_USER . " WHERE $where LIMIT $offsetPage, $limit");
         if (!$statement->execute($filter->getVarArray()))
             return false;
         return $statement->fetchAll(PDO::FETCH_ASSOC);
@@ -56,7 +54,7 @@ class VideoModel implements DatabaseModel
         $id     = validate_pos_int($id, -1);
         /* @var $db \PDO */
         $db     = CoreVIRUS::getDb();
-        $result = $db->query('SELECT * FROM ' . self::TABLE_VIDEO . ' WHERE ' . self::FIELD_VIDEO_ID . " = '$id' LIMIT 1");
+        $result = $db->query('SELECT * FROM ' . self::TABLE_USER . ' WHERE ' . self::FIELD_VIDEO_ID . " = '$id' LIMIT 1");
         return $result ? $result->fetchAll(PDO::FETCH_ASSOC) : array();
     }
 
@@ -66,7 +64,7 @@ class VideoModel implements DatabaseModel
         $fields = array();
         if (empty($title))
         {
-            $logger->LogError('Video title should not be empty on VideoModel::createEntry(), file ' . __FILE__ . ' line ' . __LINE__ . '.');
+            $logger->LogWarn('Video title should not be empty on VideoModel::createEntry(), file ' . __FILE__ . ' line ' . __LINE__ . '.');
             return false;
         }
         $fields[self::FIELD_TITLE] = trim($title);
@@ -77,7 +75,7 @@ class VideoModel implements DatabaseModel
             $fields[self::FIELD_GENRES] = trim($genres);
         }else
         {
-            $logger->LogDebug('Empty video genres on VideoModel::createEntry(), file ' . __FILE__ . ' line ' . __LINE__ . '.');
+            $logger->LogWarn('Empty video genres on VideoModel::createEntry(), file ' . __FILE__ . ' line ' . __LINE__ . '.');
             $genres = false;
         }
         if (empty($actors))
@@ -88,15 +86,15 @@ class VideoModel implements DatabaseModel
             $fields[self::FIELD_ACTORS] = trim($actors);
         }else
         {
-            $logger->LogDebug('Empty video actors on VideoModel::createEntry(), file ' . __FILE__ . ' line ' . __LINE__ . '.');
+            $logger->LogWarn('Empty video actors on VideoModel::createEntry(), file ' . __FILE__ . ' line ' . __LINE__ . '.');
             $actors = false;
         }
         if (!empty($year))
         {
-            $year = validate_pos_int($id, -1);
+            $year = validate_pos_int($year, -1);
             if ($year <= 0)
             {
-                $logger->LogError('Invalid video year on VideoModel::createEntry(), file ' . __FILE__ . ' line ' . __LINE__ . '.');
+                $logger->LogWarn('Invalid video year on VideoModel::createEntry(), file ' . __FILE__ . ' line ' . __LINE__ . '.');
                 return false;
             }
             $fields[self::FIELD_YEAR] = trim($year);
@@ -104,7 +102,7 @@ class VideoModel implements DatabaseModel
         $x                        = function ($s) { //For making "?,?,?,?", depending on the number of available fields to insert
                     return $s == 0 ? '' : '?' + str_repeat(',?', $s - 1);
                 };
-        $query     = 'INSERT INTO ' . self::TABLE_VIDEO . ' (' . implode(', ', array_keys($fields)) . ') VALUES (' . $x(count($fields)) . ')';
+        $query     = 'INSERT INTO ' . self::TABLE_USER . ' (' . implode(', ', array_keys($fields)) . ') VALUES (' . $x(count($fields)) . ')';
         /* @var $db \PDO */
         $db        = CoreVIRUS::getDb();
         $statement = $db->prepare($query);
@@ -117,14 +115,14 @@ class VideoModel implements DatabaseModel
         $db = CoreVIRUS::getDb();
         if (isset($filter))
         {
-            $result = $db->query('SELECT COUNT(*) FROM ' . self::TABLE_VIDEO);
+            $result = $db->query('SELECT COUNT(*) FROM ' . self::TABLE_USER);
             if (!$result || !($result = $result->fetch(PDO::FETCH_NUM)))
                 return false;
             return intval($result[0], 10);
         }else
         {
             $where     = $filter->getStatementQuery();
-            $statement = $db->prepare('SELECT count(*)  FROM ' . self::TABLE_VIDEO . " WHERE $where");
+            $statement = $db->prepare('SELECT count(*)  FROM ' . self::TABLE_USER . " WHERE $where");
             if (!$statement->execute($filter->getVarArray()))
                 return false;
             $result    = null;

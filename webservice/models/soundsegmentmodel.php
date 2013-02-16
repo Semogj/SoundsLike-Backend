@@ -175,65 +175,66 @@ class SoundSegmentModel implements DatabaseModel
 
     public static function createEntry($videoId, $start = null, $end = null)
     {
-        $logger = CoreVIRUS::getLogger();
-        $fields = array();
-        if (empty($videoId))
-        {
-            $logger->LogError('Video id should not be empty on SoundSegmentModel::createEntry(), file ' . __FILE__ . ' line ' . __LINE__ . '.');
-            return false;
-        }
-        /**
-         * @var $videoModel VideoModel
-         */
-        $videoModel = CoreVIRUS::loadModel('video');
-        if (!$videoModel->entryExistsById($videoId))
-        {
-            $logger->LogError("Inexistent video id '$videoId' in the database on SoundSegmentModel::createEntry(), file " . __FILE__ . ' line ' . __LINE__ . '.');
-            return false;
-        }
-
-        $fields[self::FIELD_VIDEO_ID] = trim($title);
-
-
-        if (empty($genres))
-        {
-            if (is_array($genres))
-                $genres = implode(', ', $genres);
-            $fields[self::FIELD_GENRES] = trim($genres);
-        }else
-        {
-            $logger->LogDebug('Empty video genres on SoundSegmentModel::createEntry(), file ' . __FILE__ . ' line ' . __LINE__ . '.');
-            $genres = false;
-        }
-        if (empty($actors))
-        {
-            if (is_array($actors))
-                $actors = implode(', ', $actors);
-            $actors = trim($actors);
-            $fields[self::FIELD_ACTORS] = trim($actors);
-        }else
-        {
-            $logger->LogDebug('Empty video actors on SoundSegmentModel::createEntry(), file ' . __FILE__ . ' line ' . __LINE__ . '.');
-            $actors = false;
-        }
-        if (!empty($year))
-        {
-            $year = validate_pos_int($id, -1);
-            if ($year <= 0)
-            {
-                $logger->LogError('Invalid video year on SoundSegmentModel::createEntry(), file ' . __FILE__ . ' line ' . __LINE__ . '.');
-                return false;
-            }
-            $fields[self::FIELD_YEAR] = trim($year);
-        }
-        $x = function ($s) { //For making "?,?,?,?", depending on the number of available fields to insert
-                    return $s == 0 ? '' : '?' + str_repeat(',?', $s - 1);
-                };
-        $query = 'INSERT INTO ' . self::TABLE_SOUND . ' (' . implode(', ', array_keys($fields)) . ') VALUES (' . $x(count($fields)) . ')';
-        /* @var $db \PDO */
-        $db = CoreVIRUS::getDb();
-        $statement = $db->prepare($query);
-        return $statement->execute(array_values($fields)) && $statement->rowCount() > 0 ? $db->lastInsertId() : false;
+        return false;
+//        $logger = CoreVIRUS::getLogger();
+//        $fields = array();
+//        if (empty($videoId))
+//        {
+//            $logger->LogWarn('Video id should not be empty on SoundSegmentModel::createEntry(), file ' . __FILE__ . ' line ' . __LINE__ . '.');
+//            return false;
+//        }
+//        /**
+//         * @var $videoModel VideoModel
+//         */
+//        $videoModel = CoreVIRUS::loadModel('video');
+//        if (!$videoModel->entryExistsById($videoId))
+//        {
+//            $logger->LogWarn("Inexistent video id '$videoId' in the database on SoundSegmentModel::createEntry(), file " . __FILE__ . ' line ' . __LINE__ . '.');
+//            return false;
+//        }
+//
+//        $fields[self::FIELD_VIDEO_ID] = trim($title);
+//
+//
+//        if (empty($genres))
+//        {
+//            if (is_array($genres))
+//                $genres = implode(', ', $genres);
+//            $fields[self::FIELD_GENRES] = trim($genres);
+//        }else
+//        {
+//            $logger->LogDebug('Empty video genres on SoundSegmentModel::createEntry(), file ' . __FILE__ . ' line ' . __LINE__ . '.');
+//            $genres = false;
+//        }
+//        if (empty($actors))
+//        {
+//            if (is_array($actors))
+//                $actors = implode(', ', $actors);
+//            $actors = trim($actors);
+//            $fields[self::FIELD_ACTORS] = trim($actors);
+//        }else
+//        {
+//            $logger->LogDebug('Empty video actors on SoundSegmentModel::createEntry(), file ' . __FILE__ . ' line ' . __LINE__ . '.');
+//            $actors = false;
+//        }
+//        if (!empty($year))
+//        {
+//            $year = validate_pos_int($id, -1);
+//            if ($year <= 0)
+//            {
+//                $logger->LogError('Invalid video year on SoundSegmentModel::createEntry(), file ' . __FILE__ . ' line ' . __LINE__ . '.');
+//                return false;
+//            }
+//            $fields[self::FIELD_YEAR] = trim($year);
+//        }
+//        $x = function ($s) { //For making "?,?,?,?", depending on the number of available fields to insert
+//                    return $s == 0 ? '' : '?' + str_repeat(',?', $s - 1);
+//                };
+//        $query = 'INSERT INTO ' . self::TABLE_SOUND . ' (' . implode(', ', array_keys($fields)) . ') VALUES (' . $x(count($fields)) . ')';
+//        /* @var $db \PDO */
+//        $db = CoreVIRUS::getDb();
+//        $statement = $db->prepare($query);
+//        return $statement->execute(array_values($fields)) && $statement->rowCount() > 0 ? $db->lastInsertId() : false;
     }
 
     public static function getCount(ModelFilter $filter = NULL)
