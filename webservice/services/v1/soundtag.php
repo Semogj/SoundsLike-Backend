@@ -61,14 +61,26 @@ class SoundTagService extends WebserviceService
             //are we selecting the related collection to this entry?
             switch ($request->getRawSegment(2, null))
             {
-//                case 'soundtag':
-//                    $idSoundTag = $request->getRawSegmentAsInt(3, false);
-//                    if ($idSoundTag === false)
-//                    {
-//                        $resultArr = UserModel::getFiltered(UserModel::filter()->byVideoId($idUserSegment), $limit, $offsetPage);
-//                        $output = new WebserviceCollection('soundsegment', $resultArr, null, $limit, $offsetPage);                    
-//                    } 
-//                    break;
+                case 'soundsegment':
+                    $idAudioSegment = $request->getRawSegmentAsInt(3, false);
+                    if ($idAudioSegment === false)
+                    {
+                        $resultArr = SoundSegmentModel::getFiltered(SoundSegmentModel::filter()->byVideoId($idVideoSegment), $limit, $offsetPage);
+                        $output = new WebserviceCollection('soundsegment', $resultArr, null, $limit, $offsetPage);                    
+                    } else
+                    {//we have a id segment
+                        switch ($request->getRawSegment(4, null))
+                        {
+                            case 'similar': 
+                                $resultArr = SoundSegmentModel::getMostSimilarInVideo($idAudioSegment, $idVideoSegment, $limit, $offsetPage);
+                                $output = new WebserviceCollection('soundsegment', $resultArr, null, $limit, $offsetPage);
+                                break;
+                            default:
+                                $resultArr = SoundSegmentModel::getSingle($idAudioSegment);
+                                $output = new WebserviceCollection('soundsegment', $resultArr);
+                        }
+                    }
+                    break;
                 default:
                     $resultArr = SoundTagModel::getSingle($idUserSegment);
                     $output = new WebserviceCollection($this->getServiceName(), $resultArr);
