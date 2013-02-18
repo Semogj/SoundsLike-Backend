@@ -1,10 +1,13 @@
 <?php
+
 namespace VIRUS\webservice;
+
 use VIRUS\webservice\CoreVIRUS;
 use VIRUS\webservice\WebserviceResponse;
 
-if(!defined("VIRUS")){
-    die("You are not allowed here!");    
+if (!defined("VIRUS"))
+{
+    die("You are not allowed here!");
 }
 
 /*
@@ -27,22 +30,28 @@ if (isset($response) && is_object($response) && $response instanceof WebserviceR
 {
 
     $status = $response->getStatus();
-    $outputArr = $response->getOutputArray();
+//    $outputArr = $response->getOutputArray();
     $resultType = $response->getResultType();
-
+    $statusHttp = getStatusCode($status);
     \http_response_code($status);
+
+   
+    $output = $response->getOutputArrayAsXML();
+    
+    $output = '<' . RESPONSE_APP_NAME . " status=\"$status\" code=\"$statusHttp\">
+                $output
+        </" . RESPONSE_APP_NAME . '>';
     if ($resultType == 'json')
     {
-        header('Content-type: application/json');
-        echo json_encode(array(RESPONSE_APP_NAME => $outputArr));
+         header('Content-type: application/json');
+         $output = \xml2json::transformXmlStringToJson($output);
+         $logger->LogDebug("Response (httpCode=$statusHttp; type=$resultType): " . $output);
+         echo $output;
     } else
     {
-        header('Content-type: text/xml');
-        $output = $response->getOutputArrayAsXML();
-        $statusHttp = getStatusCode($status);
-        echo '<', RESPONSE_APP_NAME, " status=\"$status\" code=\"$statusHttp\">
-                $output
-        </", RESPONSE_APP_NAME, '>';
+         header('Content-type: text/xml');
+         $logger->LogDebug("Response (httpCode=$statusHttp; type=$resultType): " . $output);
+         echo $output;
     }
 //    $b=ob_get_contents();
 //    $logger->LogFatal(var_export($b, true));

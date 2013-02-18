@@ -138,7 +138,7 @@ class SoundSegmentModel implements DatabaseModel
         $statement->bindValue(':vidid', $videoId);
         
         if (!$statement->execute())
-            return false;
+            return array();
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
     public static function getMostSimilar($segmentId, $limit = API_DEFAULT_RESULT_LIMIT, $offsetPage = API_DEFAULT_RESULT_PAGE)
@@ -157,10 +157,9 @@ class SoundSegmentModel implements DatabaseModel
         $statement = $db->prepare($sql);
         $statement->bindValue(':offset', $offsetPage, PDO::PARAM_INT);
         $statement->bindValue(':limit', $limit, PDO::PARAM_INT);
-        $statement->bindValue(':id', $segmentId);
-        if (!$statement->execute())
-            return false;
-        return $statement->fetchAll(PDO::FETCH_ASSOC);
+        $statement->bindValue(':id', $segmentId, PDO::PARAM_INT);
+
+        return $statement->execute() ? $statement->fetchAll(PDO::FETCH_ASSOC) : array();
     }
 
     public static function getSingle($id)

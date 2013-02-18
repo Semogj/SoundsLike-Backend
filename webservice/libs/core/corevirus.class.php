@@ -135,7 +135,7 @@ class CoreVIRUS
     public static function loadService($service, $version = 1)
     {
         $service = strtolower(trim($service));
-        $className = SERVICES_NAMESPACE .  '\\' . ucfirst($service . "Service");
+        $className = SERVICES_NAMESPACE . '\\' . ucfirst($service . "Service");
 
         $filename = ROOT_DIRECTORY . SERVICES_FOLTER . "/v{$version}/{$service}.php";
         //is it already loaded?
@@ -194,16 +194,41 @@ class CoreVIRUS
 
     public static function displayErrorResponse($httpStatus, $title, $msg, $debug = '', $die = true)
     {
+
+        $getContentType = function() {
+                    $httpAccept = '';
+                    if (isset($_SERVER['HTTP_ACCEPT']))
+                        $httpAccept = strtolower(trim($_SERVER['HTTP_ACCEPT']));
+                    if (strpos($httpAccept, 'json'))
+                    {
+                        $httpAccept = 'json';
+                    } else
+                    {
+                        $httpAccept = 'xml';
+                    }
+                    return $httpAccept;
+                };
+
         \http_response_code($httpStatus);
-        header('Content-type: text/xml');
+        $type = $getContentType();
+        header('Content-type: ' . ($type === 'json' ? 'application/json' : 'text/xml'));
         $status = getStatusCode($httpStatus);
-        echo '<', RESPONSE_APP_NAME, " status=\"$httpStatus\" code=\"$status\">
-        <error>
-        <code>$httpStatus</code>
-        <title>$title</title>
-        <description>$msg</description>",
-        !empty($debug) ? "<debug>$debug</debug>" : '',
-        '</error></', RESPONSE_APP_NAME, '>';
+        if ($type === 'json')
+        {
+            $outputArr = array('error' => array('code' => $httpStatus, 'title' => $title, 'description' => $msg));
+            if (!empty($debug))
+                $outputArr['error']['debug'] = $debug;
+            echo json_encode(array(RESPONSE_APP_NAME => $outputArr));
+        } else
+        {
+            echo '<', RESPONSE_APP_NAME, " status=\"$httpStatus\" code=\"$status\">
+                <error>
+                <code>$httpStatus</code>
+                <title>$title</title>
+                <description>$msg</description>",
+                !empty($debug) ? "<debug>$debug</debug>" : '',
+            '</error></', RESPONSE_APP_NAME, '>';
+        }
         if ($die)
             die(); //Die demon!
     }

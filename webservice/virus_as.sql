@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Feb 05, 2013 at 09:23 PM
+-- Generation Time: Feb 18, 2013 at 09:19 PM
 -- Server version: 5.5.28-1
 -- PHP Version: 5.4.4-9
 
@@ -171,16 +171,48 @@ INSERT INTO `SoundSimilarity` (`soundSegmentId1`, `soundSegmentId2`, `value`, `l
 --
 
 CREATE TABLE IF NOT EXISTS `SoundTag` (
+  `idSoundTag` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `tagName` varchar(30) NOT NULL DEFAULT '',
   `soundSegmentId` int(10) unsigned NOT NULL,
   `userId` int(10) unsigned NOT NULL,
-  `tagName` varchar(30) NOT NULL,
-  `idSoundTag` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `type` varchar(50) NOT NULL DEFAULT 'other',
-  PRIMARY KEY (`soundSegmentId`,`userId`,`tagName`),
-  UNIQUE KEY `soundSegmentId_UNIQUE` (`soundSegmentId`),
-  UNIQUE KEY `idSoudTag_UNIQUE` (`idSoundTag`),
+  `insertedTime` int(11) NOT NULL DEFAULT '-1',
+  PRIMARY KEY (`idSoundTag`),
+  UNIQUE KEY `SECOND_PRIMARY` (`soundSegmentId`,`userId`,`tagName`),
   KEY `fk_SoundTag_User1_idx` (`userId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=44 ;
+
+--
+-- Dumping data for table `SoundTag`
+--
+
+INSERT INTO `SoundTag` (`idSoundTag`, `tagName`, `soundSegmentId`, `userId`, `type`, `insertedTime`) VALUES
+(31, 'tag1', 7, 1, 'other', 0),
+(32, 'tag2', 7, 1, 'other', 0),
+(33, 'tag3', 7, 1, 'other', 0),
+(34, 'tag1', 7, 2, 'other', 0),
+(35, 'tag3', 7, 2, 'other', 0),
+(36, 'tag10', 7, 2, 'other', 0),
+(37, 'tag11', 7, 2, 'other', 0),
+(38, 'tag11', 6, 2, 'other', 0),
+(39, 'tag11', 5, 2, 'other', 0),
+(40, 'tag144', 4, 2, 'other', 0),
+(41, 'tag3', 7, 3, 'other', 0),
+(42, 'tag15', 6, 3, 'other', 0),
+(43, 'otherTag', 6, 3, 'other', 1361218727);
+
+--
+-- Triggers `SoundTag`
+--
+DROP TRIGGER IF EXISTS `SoundTag.insertedTime update`;
+DELIMITER //
+CREATE TRIGGER `SoundTag.insertedTime update` BEFORE INSERT ON `SoundTag`
+ FOR EACH ROW if (new.insertedTime = -1)  
+  then  
+    set new.insertedTime = unix_timestamp();  
+  end if
+//
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -192,7 +224,16 @@ CREATE TABLE IF NOT EXISTS `User` (
   `idUser` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `userName` varchar(30) NOT NULL,
   PRIMARY KEY (`idUser`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=4 ;
+
+--
+-- Dumping data for table `User`
+--
+
+INSERT INTO `User` (`idUser`, `userName`) VALUES
+(1, 'user1'),
+(2, 'user2'),
+(3, 'user3');
 
 -- --------------------------------------------------------
 

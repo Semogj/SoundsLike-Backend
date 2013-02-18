@@ -11,11 +11,12 @@ use VIRUS\webservice\CoreVIRUS;
 use VIRUS\webservice\WebserviceRequest;
 use VIRUS\webservice\WebserviceResponse;
 use VIRUS\webservice\WebserviceCollection;
-use VIRUS\webservice\models\VideoModel;
+use VIRUS\webservice\models\UserModel;
 use VIRUS\webservice\OkWebserviceResponse;
 use VIRUS\webservice\models\SoundSegmentModel;
+use VIRUS\webservice\models\SoundTagModel;
 
-class VideoService extends WebserviceService
+class UserService extends WebserviceService
 {
 
     /**
@@ -48,10 +49,10 @@ class VideoService extends WebserviceService
         $output = null;
         //Checking if the first segment, after the service segment is an integer
         // if its an integer, it means we are selecting a specific entry of the service
-        $idVideoSegment = $request->getRawSegmentAsInt(1, false);
-        if ($idVideoSegment === false)
+        $idUserSegment = $request->getRawSegmentAsInt(1, false);
+        if ($idUserSegment === false)
         {
-            $resultArr = VideoModel::get($limit, $offsetPage);
+            $resultArr = UserModel::get($limit, $offsetPage);
             //var_export($resultArr);
             $output = new WebserviceCollection($this->getServiceName(), $resultArr, null, $limit, $offsetPage);
         } else
@@ -60,28 +61,12 @@ class VideoService extends WebserviceService
             //are we selecting the related collection to this entry?
             switch ($request->getRawSegment(2, null))
             {
-                case 'soundsegment':
-                    $idAudioSegment = $request->getRawSegmentAsInt(3, false);
-                    if ($idAudioSegment === false)
-                    {
-                        $resultArr = SoundSegmentModel::getFiltered(SoundSegmentModel::filter()->byVideoId($idVideoSegment), $limit, $offsetPage);
-                        $output = new WebserviceCollection('soundsegment', $resultArr, null, $limit, $offsetPage);                    
-                    } else
-                    {//we have a id segment
-                        switch ($request->getRawSegment(4, null))
-                        {
-                            case 'similar': 
-                                $resultArr = SoundSegmentModel::getMostSimilarInVideo($idAudioSegment, $idVideoSegment, $limit, $offsetPage);
-                                $output = new WebserviceCollection('soundsegment', $resultArr, null, $limit, $offsetPage);
-                                break;
-                            default:
-                                $resultArr = SoundSegmentModel::getSingle($idAudioSegment);
-                                $output = new WebserviceCollection('soundsegment', $resultArr);
-                        }
-                    }
+                case 'tags': case 'soundtags': case 'tag': case 'soundtag':
+                    $resultArr = SoundTagModel::getUserTags($idUserSegment, $limit, $offsetPage);
+                    $output = new WebserviceCollection('soundtag', $resultArr, null, $limit, $offsetPage);
                     break;
                 default:
-                    $resultArr = VideoModel::getSingle($idVideoSegment);
+                    $resultArr = UserModel::getSingle($idUserSegment);
                     $output = new WebserviceCollection($this->getServiceName(), $resultArr);
             }
         }
