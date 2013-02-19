@@ -107,10 +107,11 @@ class SoundTagModel implements DatabaseModel
         $limit = validate_pos_int($limit, API_DEFAULT_RESULT_LIMIT);
         $offsetPage = (validate_pos_int($offsetPage, API_DEFAULT_RESULT_PAGE) - 1) * $limit; //offset
         $userId = intval($userId, 10);
-        $sql = 'SELECT idSoundTag, tagName, type, soundSegmentId, userId, username 
+        $sql = 'SELECT idSoundTag, tagName, type, soundSegmentId, userId, username, insertedTime
                 FROM SoundTag, User
                 WHERE  userId = :uid
                 AND SoundTag.userId = User.idUser
+                ORDER BY insertedTime
                 LIMIT :offset, :limit';
         $db = CoreVIRUS::getDb();
         $statement = $db->prepare($sql);
@@ -161,11 +162,12 @@ class SoundTagModel implements DatabaseModel
         $limit = validate_pos_int($limit, API_DEFAULT_RESULT_LIMIT);
         $offsetPage = (validate_pos_int($offsetPage, API_DEFAULT_RESULT_PAGE) - 1) * $limit; //offset
         $userId = intval($userId, 10);
-        $sql = 'SELECT idSoundTag, tagName, type, soundSegmentId, userId, username 
+        $sql = 'SELECT idSoundTag, tagName, type, soundSegmentId, userId, username, insertedTime 
                 FROM SoundTag, User
                 WHERE  userId = :uid
                 AND soundSegmentId = :sid
                 AND SoundTag.userId = User.idUser
+                ORDER BY insertedTime
                 LIMIT :offset, :limit';
         $db = CoreVIRUS::getDb();
         $statement = $db->prepare($sql);
