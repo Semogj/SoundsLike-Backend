@@ -115,8 +115,8 @@ class SoundTagModel implements DatabaseModel
         $db = CoreVIRUS::getDb();
         $statement = $db->prepare($sql);
         $statement->bindValue(':uid', $userId, PDO::PARAM_INT);
-        $statement->bindValue(':offset', $userId, PDO::PARAM_INT);
-        $statement->bindValue(':limit', $userId, PDO::PARAM_INT);
+        $statement->bindValue(':offset', $offsetPage, PDO::PARAM_INT);
+        $statement->bindValue(':limit', $limit, PDO::PARAM_INT);
         if (!$statement->execute())
         {
             CoreVIRUS::getLogger()->LogError('Unknown database error while executing the statement' .
@@ -171,8 +171,8 @@ class SoundTagModel implements DatabaseModel
         $statement = $db->prepare($sql);
         $statement->bindValue(':uid', $userId, PDO::PARAM_INT);
         $statement->bindValue(':sid', $audioSegmentId, PDO::PARAM_INT);
-        $statement->bindValue(':offset', $userId, PDO::PARAM_INT);
-        $statement->bindValue(':limit', $userId, PDO::PARAM_INT);
+        $statement->bindValue(':offset', $offsetPage, PDO::PARAM_INT);
+        $statement->bindValue(':limit', $limit, PDO::PARAM_INT);
         if (!$statement->execute())
         {
             CoreVIRUS::getLogger()->LogError('Unknown database error while executing the statement' .
