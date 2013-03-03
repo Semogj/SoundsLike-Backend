@@ -46,7 +46,7 @@ class SoundSegmentModel implements DatabaseModel
                 ' FROM ' . self::TABLE_SOUND .
                 ',' . self::TABLE_VIDEO .
                 ' WHERE ' . self::FIELD_VIDEO_ID . ' = ' . self::FIELD_VIDEO_ID_VIDEO .
-                " LIMIT $offsetPage, $limit");
+                "LIMIT $offsetPage, $limit");
 
         return $result ? $result->fetchAll(PDO::FETCH_ASSOC) : false;
     }
@@ -67,7 +67,7 @@ class SoundSegmentModel implements DatabaseModel
                 ',' . self::TABLE_VIDEO .
                 ' WHERE ' . self::FIELD_VIDEO_ID . ' = ' . self::FIELD_VIDEO_ID_VIDEO .
                 ($filter->isEmpty() ? ' ' : ' AND ' . $filter->getStatementQuery() ) .
-                " LIMIT $offsetPage, $limit";
+                " ORDER BY start ASC LIMIT $offsetPage, $limit";
 
         $statement = $db->prepare($sql);
         if (!$statement->execute($filter->getVarArray()))

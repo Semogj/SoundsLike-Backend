@@ -2,8 +2,14 @@
 
 namespace VIRUS\webservice;
 
-if(!defined("VIRUS")){
-    die("You are not allowed here!");    
+if (!defined("VIRUS"))
+{//prevent script direct accessF
+    header('HTTP/1.1 404 Not Found');
+    header("X-Powered-By: ");
+    echo "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n<html><head>\n<title>404 Not Found</title>\n</head>
+          <body>\n<h1>Not Found</h1>\n<p>The requested URL " . $_SERVER['REQUEST_URI'] . " was not found on this server.</p>\n
+          <hr>\n" . $_SERVER['SERVER_SIGNATURE'] . "\n</body></html>\n";
+    die();
 }
 
 class WebserviceRequest
@@ -12,22 +18,22 @@ class WebserviceRequest
     private $resource, $method, $resultType, $segments, $rawParameters, $content, $contentType;
 
     const AVAILABLE_HTTP_METHODS = 'GET:POST:PUT:DELETE';
-    const ACCEPT_TYPES = 'xml:json';
-    const CONTENT_TYPES = 'xml:json';
-    const DEFAULT_CONTENT_TYPE = 'xml';
-    const DEFAULT_ACCEPT_TYPE = 'xml';
-    const DEFAULT_HTTP_METHOD = 'GET';
+    const ACCEPT_TYPES           = 'xml:json';
+    const CONTENT_TYPES          = 'xml:json';
+    const DEFAULT_CONTENT_TYPE   = 'xml';
+    const DEFAULT_ACCEPT_TYPE    = 'xml';
+    const DEFAULT_HTTP_METHOD    = 'GET';
 
     private static function _splitParamKeyVal($delimitersChars, $string)
     {
         $charArr = str_split($delimitersChars);
-        $nChars = count($charArr);
+        $nChars  = count($charArr);
         if ($nChars == 0)
         {
             return array($string);
         }
         $strLen = strlen($string);
-        $j = 0;
+        $j      = 0;
         for ($i = 0; $i < $strLen; $i++)
         {
             for ($j = 0; $j < $nChars; $j++)
@@ -43,10 +49,10 @@ class WebserviceRequest
 
     public function __construct($resource, array $segments)
     {
-        $this->resource = $resource;
+        $this->resource         = $resource;
         $this->rawParameters[0] = $resource;
-        $this->segments[0] = $resource;
-        $segmentIndex = 1;
+        $this->segments[0]      = $resource;
+        $segmentIndex           = 1;
         //handle parameters
         foreach ($segments as $segment)
         {
@@ -60,10 +66,10 @@ class WebserviceRequest
                 }
                 $this->rawParameters[$segmentIndex] = $param;
                 //both : and = are parameters key-value separators, e.g. /key=value/x:1;limit=2;
-                $paramArr = self::_splitParamKeyVal(':=', $param);
+                $paramArr                           = self::_splitParamKeyVal(':=', $param);
                 if (count($paramArr) == 2)
                 {
-                    $val = is_numeric($paramArr[1]) ? intval($paramArr[1], 10) : trim(urldecode($paramArr[1]));
+                    $val                           = is_numeric($paramArr[1]) ? intval($paramArr[1], 10) : trim(urldecode($paramArr[1]));
                     $this->segments[$segmentIndex] = $val;
                     if (!empty($paramArr[0]))
                     {
@@ -80,26 +86,26 @@ class WebserviceRequest
         $method = strtoupper($_SERVER['REQUEST_METHOD']);
         if (!in_array($method, explode(':', self::AVAILABLE_HTTP_METHODS)))
         {
-            $method = DEFAULT_HTTP_METHOD;
+            $method           = DEFAULT_HTTP_METHOD;
         }
-        $this->method = $method;
+        $this->method     = $method;
         //handle acceptType
-        $httpAccept = '';
+        $httpAccept       = '';
         if (isset($_SERVER['HTTP_ACCEPT']))
-            $httpAccept = strtolower(trim($_SERVER['HTTP_ACCEPT']));
-        $resultTypes = explode(':', self::ACCEPT_TYPES);
+            $httpAccept       = strtolower(trim($_SERVER['HTTP_ACCEPT']));
+        $resultTypes      = explode(':', self::ACCEPT_TYPES);
         $this->resultType = self::DEFAULT_ACCEPT_TYPE;
         foreach ($resultTypes as $at)
         {
             if (strpos($httpAccept, $at))
             {
-                $this->resultType = $at;
+                $this->resultType  = $at;
                 break;
             }
         }
         //handle contentType
-        $httpContentType = isset($_SERVER['CONTENT_TYPE']) ? strtolower(trim($_SERVER['CONTENT_TYPE'])) : self::DEFAULT_CONTENT_TYPE;
-        $contentTypes = explode(':', self::CONTENT_TYPES);
+        $httpContentType   = isset($_SERVER['CONTENT_TYPE']) ? strtolower(trim($_SERVER['CONTENT_TYPE'])) : self::DEFAULT_CONTENT_TYPE;
+        $contentTypes      = explode(':', self::CONTENT_TYPES);
         $this->contentType = self::DEFAULT_CONTENT_TYPE;
         foreach ($contentTypes as $ct)
         {
@@ -110,8 +116,8 @@ class WebserviceRequest
             }
         }
         //get request content. Normally empty for GET and DELETE http methods
-        $content = @file_get_contents('php://input');
-        $this->content = $content === null ? '' : $content;
+        $content           = @file_get_contents('php://input');
+        $this->content     = $content === null ? '' : $content;
     }
 
     public function getResource()
@@ -144,7 +150,7 @@ class WebserviceRequest
                     return false;
                 };
         libxml_use_internal_errors(false);
-        $xml = simplexml_load_string($this->content);
+        $xml    = simplexml_load_string($this->content);
         if (!$xml)
             return $defaultNotFound;
         $result = $this->_getXmlFirstTag($xml, $key);
@@ -180,7 +186,7 @@ class WebserviceRequest
         if (empty($this->segments[$indexOrKey]))
             return $default;
         $str = $this->segments[$indexOrKey];
-        return is_numeric($str) ? min(intval($str, 10),$maxValue) : $default;
+        return is_numeric($str) ? min(intval($str, 10), $maxValue) : $default;
     }
 
     public function getSegmentAsPositiveInt($indexOrKey, $default = false, $maxValue = PHP_INT_MAX)
@@ -201,7 +207,7 @@ class WebserviceRequest
         if (empty($this->rawParameters[$indexOrKey]))
             return $default;
         $str = $this->rawParameters[$indexOrKey];
-        return is_numeric($str) ? min(intval($str, 10),$maxValue) : $default;
+        return is_numeric($str) ? min(intval($str, 10), $maxValue) : $default;
     }
 
     public function getRawSegmentAsPositiveInt($indexOrKey, $default = false, $maxValue = PHP_INT_MAX)

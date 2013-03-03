@@ -1,24 +1,27 @@
 <?php
 
 if (!defined("VIRUS"))
-{
-    die("You are not allowed here!");
+{//prevent script direct access
+    header('HTTP/1.1 404 Not Found');
+    header("X-Powered-By: ");
+    echo "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n<html><head>\n<title>404 Not Found</title>\n</head>
+          <body>\n<h1>Not Found</h1>\n<p>The requested URL " . $_SERVER['REQUEST_URI'] . " was not found on this server.</p>\n
+          <hr>\n" . $_SERVER['SERVER_SIGNATURE'] . "\n</body></html>\n";
+    die();
 }
 
 function getArrayAsXML(array $theArray, $previousKey = null)
 {
     $result = '';
-//    do_dump($theArray);
-//    die();
     if (is_array($theArray))
     {
         foreach ($theArray as $key => $value)
         {
-            $sufix = '';
+            $sufix    = '';
             $valueTmp = null;
             if (is_object($value) && $value instanceof WebserviceCollection)
             {
-                $key = $value->resourceTag;
+                $key   = $value->resourceTag;
                 $sufix = " count=\"$value->count\"";
                 if ($value->page !== null)
                 {
@@ -36,12 +39,14 @@ function getArrayAsXML(array $theArray, $previousKey = null)
                 {
                     $sufix .= " totalPages=\"$value->totalPages\"";
                 }
-                $valueTmp = is_array($value->resulArray) ? getArrayAsXML($value->resulArray, $value->resourceTag) : $value = htmlspecialchars($value->resulArray, null, 'UTF-8');
-                $key = plural($key);
+                $valueTmp = is_array($value->resulArray) ? getArrayAsXML($value->resulArray, $value->resourceTag) : $value    = htmlspecialchars($value->resulArray,
+                                                                                                                                                 null,
+                                                                                                                                                 'UTF-8');
+                $key      = plural($key);
                 $result .= "<{$key}{$sufix}>$valueTmp</$key>";
             } elseif (is_array($value))
             {
-                $key = is_numeric($key) && $previousKey != null ? $previousKey : $key;
+                $key   = is_numeric($key) && $previousKey != null ? $previousKey : $key;
                 $sufix = ' nodesCount="' . count($value) . '"';
                 $value = getArrayAsXML($value, $key);
                 $result .= "<{$key}{$sufix}>$value</$key>";
@@ -346,7 +351,7 @@ function ip_address($proxyIps = null)
     }
     if (!valid_ip($ip))
     {
-        $ip = '0.0.0.0';
+        $ip                    = '0.0.0.0';
     }
     $GLOBALS['ip_address'] = $ip;
     return $ip;
@@ -478,7 +483,7 @@ function valid_ipv6($str)
 // 0-ffff per group
 // one set of consecutive 0 groups can be collapsed to ::
 
-    $groups = 8;
+    $groups    = 8;
     $collapsed = FALSE;
 
     $chunks = array_filter(
@@ -536,6 +541,13 @@ function valid_ipv6($str)
     return $collapsed OR $groups == 1;
 }
 
+/**
+ * Tests if this string ends with the specified suffix.
+ * @param type $haystack the string
+ * @param type $needle the suffix
+ * @param type $case case sensitive? DEFAULT=True
+ * @return boolean true or false.
+ */
 function startsWith($haystack, $needle, $case = true)
 {
     if ($case)
@@ -544,6 +556,13 @@ function startsWith($haystack, $needle, $case = true)
     return stripos($haystack, $needle, 0) === 0;
 }
 
+/**
+ * Tests if this string starts with the specified prefix.
+ * @param type $haystack the string
+ * @param type $needle the prefix
+ * @param type $case case sensitive? DEFAULT=True
+ * @return boolean true or false.
+ */
 function endsWith($haystack, $needle, $case = true)
 {
     $expectedPosition = strlen($haystack) - strlen($needle);
@@ -562,7 +581,7 @@ function endsWith($haystack, $needle, $case = true)
  */
 function isPHPVersion($version)
 {
-    $version = 'isPHPVersion' . $version;
+    $version           = 'isPHPVersion' . $version;
     if (isset($GLOBALS[$version]))
         return $GLOBALS[$version];
     return $GLOBALS[$version] = version_compare(PHP_VERSION, $version, '<=');
@@ -581,6 +600,12 @@ function validate_pos_int($theValue, $theDefault, $base = 10)
     return $theValue > 0 ? $theValue : $theDefault;
 }
 
+/**
+ * Checks if a string is a valid URL. Uses the RFC 3986 but does not validate relative paths.
+ * 
+ * @param string $theString The string to be validated.
+ * @return boolean true or false. 
+ */
 function is_valid_url($theString)
 {
     return preg_match(
@@ -603,56 +628,56 @@ function is_valid_url($theString)
 (\?[a-z0-9\-._~%!$&\'()*+,;=:@\/?]*)?
 # Fragment
 (\#[a-z0-9\-._~%!$&\'()*+,;=:@\/?]*)?
-$/ix', $theString);
+$/ix',
+            $theString);
 }
 
-/**
- * Singular
- *
- * Takes a plural word and makes it singular
- * This is a function retrieved from the Inflector helper of CodeIgniter PHP framework.
- * 
- * @author ExpressionEngine Dev Team
- * @copyright	Copyright (c) 2008 - 2011, EllisLab, Inc.
- * @license http://codeigniter.com/user_guide/license.html
- * @param string $str
- * @return string
- */
 if (!function_exists('singular'))
 {
 
+    /**
+     * Singular
+     * Takes a plural word and makes it singular
+     * This is a function retrieved from the Inflector helper of CodeIgniter PHP framework.
+     * 
+     * @author ExpressionEngine Dev Team
+     * @copyright	Copyright (c) 2008 - 2011, EllisLab, Inc.
+     * @license http://codeigniter.com/user_guide/license.html
+     * @param string $str
+     * @return string
+     */
     function singular($str)
     {
         $result = strval($str);
 
         $singular_rules = array(
-            '/(matr)ices$/' => '\1ix',
-            '/(vert|ind)ices$/' => '\1ex',
-            '/^(ox)en/' => '\1',
-            '/(alias)es$/' => '\1',
-            '/([octop|vir])i$/' => '\1us',
-            '/(cris|ax|test)es$/' => '\1is',
-            '/(shoe)s$/' => '\1',
-            '/(o)es$/' => '\1',
-            '/(bus|campus)es$/' => '\1',
-            '/([m|l])ice$/' => '\1ouse',
-            '/(x|ch|ss|sh)es$/' => '\1',
-            '/(m)ovies$/' => '\1\2ovie',
-            '/(s)eries$/' => '\1\2eries',
-            '/([^aeiouy]|qu)ies$/' => '\1y',
-            '/([lr])ves$/' => '\1f',
-            '/(tive)s$/' => '\1',
-            '/(hive)s$/' => '\1',
-            '/([^f])ves$/' => '\1fe',
-            '/(^analy)ses$/' => '\1sis',
+            '/(matr)ices$/'                                                   => '\1ix',
+            '/(vert|ind)ices$/'                                               => '\1ex',
+            '/^(ox)en/'                                                       => '\1',
+            '/(alias)es$/'                                                    => '\1',
+            '/([octop|vir])i$/'                                               => '\1us',
+            '/(cris|ax|test)es$/'                                             => '\1is',
+            '/(shoe)s$/'                                                      => '\1',
+            '/(o)es$/'                                                        => '\1',
+            '/(bus|campus)es$/'                                               => '\1',
+            '/([m|l])ice$/'                                                   => '\1ouse',
+            '/(x|ch|ss|sh)es$/'                                               => '\1',
+            '/(m)ovies$/'                                                     => '\1\2ovie',
+            '/(s)eries$/'                                                     => '\1\2eries',
+            '/([^aeiouy]|qu)ies$/'                                            => '\1y',
+            '/([lr])ves$/'                                                    => '\1f',
+            '/(tive)s$/'                                                      => '\1',
+            '/(hive)s$/'                                                      => '\1',
+            '/([^f])ves$/'                                                    => '\1fe',
+            '/(^analy)ses$/'                                                  => '\1sis',
             '/((a)naly|(b)a|(d)iagno|(p)arenthe|(p)rogno|(s)ynop|(t)he)ses$/' => '\1\2sis',
-            '/([ti])a$/' => '\1um',
-            '/(p)eople$/' => '\1\2erson',
-            '/(m)en$/' => '\1an',
-            '/(s)tatuses$/' => '\1\2tatus',
-            '/(c)hildren$/' => '\1\2hild',
-            '/(n)ews$/' => '\1\2ews',
-            '/([^u])s$/' => '\1',
+            '/([ti])a$/'                                                      => '\1um',
+            '/(p)eople$/'                                                     => '\1\2erson',
+            '/(m)en$/'                                                        => '\1an',
+            '/(s)tatuses$/'                                                   => '\1\2tatus',
+            '/(c)hildren$/'                                                   => '\1\2hild',
+            '/(n)ews$/'                                                       => '\1\2ews',
+            '/([^u])s$/'                                                      => '\1',
         );
 
         foreach ($singular_rules as $rule => $replacement)
@@ -669,47 +694,46 @@ if (!function_exists('singular'))
 
 }
 
-/**
- * Plural
- *
- * Takes a singular word and makes it plural
- *
- * This is a function retrieved from the Inflector helper of CodeIgniter PHP framework.
- * 
- * @author ExpressionEngine Dev Team
- * @copyright	Copyright (c) 2008 - 2011, EllisLab, Inc.
- * @license http://codeigniter.com/user_guide/license.html
- * @param string $str
- * @param boolean
- * @return string
- */
+
 if (!function_exists('plural'))
 {
 
+    /**
+     * Plural
+     * Takes a singular word and makes it plural
+     *
+     * This is a function retrieved from the Inflector helper of CodeIgniter PHP framework.
+     * 
+     * @author ExpressionEngine Dev Team
+     * @copyright	Copyright (c) 2008 - 2011, EllisLab, Inc.
+     * @license http://codeigniter.com/user_guide/license.html
+     * @param string $str The string to be "plural'ized"
+     * @return string
+     */
     function plural($str)
     {
         $result = strval($str);
 
         $plural_rules = array(
-            '/^(ox)$/' => '\1\2en', // ox
-            '/([m|l])ouse$/' => '\1ice', // mouse, louse
+            '/^(ox)$/'                => '\1\2en', // ox
+            '/([m|l])ouse$/'          => '\1ice', // mouse, louse
             '/(matr|vert|ind)ix|ex$/' => '\1ices', // matrix, vertex, index
-            '/(x|ch|ss|sh)$/' => '\1es', // search, switch, fix, box, process, address
-            '/([^aeiouy]|qu)y$/' => '\1ies', // query, ability, agency
-            '/(hive)$/' => '\1s', // archive, hive
+            '/(x|ch|ss|sh)$/'         => '\1es', // search, switch, fix, box, process, address
+            '/([^aeiouy]|qu)y$/'      => '\1ies', // query, ability, agency
+            '/(hive)$/'               => '\1s', // archive, hive
             '/(?:([^f])fe|([lr])f)$/' => '\1\2ves', // half, safe, wife
-            '/sis$/' => 'ses', // basis, diagnosis
-            '/([ti])um$/' => '\1a', // datum, medium
-            '/(p)erson$/' => '\1eople', // person, salesperson
-            '/(m)an$/' => '\1en', // man, woman, spokesman
-            '/(c)hild$/' => '\1hildren', // child
-            '/(buffal|tomat)o$/' => '\1\2oes', // buffalo, tomato
-            '/(bu|campu)s$/' => '\1\2ses', // bus, campus
-            '/(alias|status|virus)/' => '\1es', // alias
-            '/(octop)us$/' => '\1i', // octopus
-            '/(ax|cris|test)is$/' => '\1es', // axis, crisis
-            '/s$/' => 's', // no change (compatibility)
-            '/$/' => 's',
+            '/sis$/'                  => 'ses', // basis, diagnosis
+            '/([ti])um$/'             => '\1a', // datum, medium
+            '/(p)erson$/'             => '\1eople', // person, salesperson
+            '/(m)an$/'                => '\1en', // man, woman, spokesman
+            '/(c)hild$/'              => '\1hildren', // child
+            '/(buffal|tomat)o$/'      => '\1\2oes', // buffalo, tomato
+            '/(bu|campu)s$/'          => '\1\2ses', // bus, campus
+            '/(alias|status|virus)/'  => '\1es', // alias
+            '/(octop)us$/'            => '\1i', // octopus
+            '/(ax|cris|test)is$/'     => '\1es', // axis, crisis
+            '/s$/'                    => 's', // no change (compatibility)
+            '/$/'                     => 's',
         );
 
         foreach ($plural_rules as $rule => $replacement)
@@ -726,29 +750,45 @@ if (!function_exists('plural'))
 
 }
 
+/**
+ * Returns the namespace part of a class name string that contains its namespace.
+ * @param string $name the class name with (or without) a namepace.
+ * @return string the namespace string, or empty if not found.
+ */
 function getClassNamespace($name)
 {
     return substr($name, 0, strrpos($name, '\\'));
 }
 
+/**
+ * Decomposes a classname into classname and namespace, returning an array or object with the two parts.
+ * @param string $name the class name with (or without) a namepace.
+ * @param boolean $asObj DEFAULT = FALSE return an object instead of an array. 
+ * @return array|object the decomposed parts as array or object. The used keys are "classname" and "namespace".
+ */
 function parseClassname($name, $asObj = false)
 {
     if ($asObj)
     {
-        $ret = new stdClass;
-        $ret->classname = substr(strrchr($name,'\\'),1);
+        $ret            = new stdClass;
+        $ret->classname = substr(strrchr($name, '\\'), 1);
         $ret->namespace = substr($name, 0, strrpos($name, '\\'));
     } else
     {
         $ret = array(
-            'classname' => substr(strrchr($name,'\\'),1),
+            'classname' => substr(strrchr($name, '\\'), 1),
             'namespace' => substr($name, 0, strrpos($name, '\\'))
         );
     }
     return $ret;
 }
 
+/**
+ * Returns the classname part of a class name string that contains its namespace.
+ * @param string $name the class name with (or without) a namepace.
+ * @return string the classname string, or empty if not found for some reason.
+ */
 function getClassName($name)
 {
-    return substr(strrchr($name,'\\'),1);
+    return substr(strrchr($name, '\\'), 1);
 }

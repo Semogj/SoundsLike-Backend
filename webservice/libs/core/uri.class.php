@@ -3,14 +3,14 @@
 namespace VIRUS\webservice;
 
 if (!defined("VIRUS"))
-{
-    die("You are not allowed here!");
+{//prevent script direct accessF
+    header('HTTP/1.1 404 Not Found');
+    header("X-Powered-By: ");
+    echo "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n<html><head>\n<title>404 Not Found</title>\n</head>
+          <body>\n<h1>Not Found</h1>\n<p>The requested URL " . $_SERVER['REQUEST_URI'] . " was not found on this server.</p>\n
+          <hr>\n" . $_SERVER['SERVER_SIGNATURE'] . "\n</body></html>\n";
+    die();
 }
-
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 
 /**
  * This class is used to filter and segment the URI.
@@ -40,11 +40,11 @@ class URI
     protected function __construct()
     {
         $this->uriString = self::_fetch_uri_string();
-        $this->segments = self::_explode_segments($this->uriString);
+        $this->segments  = self::_explode_segments($this->uriString);
     }
 
     const PERMITTED_URI_CHARS = 'a-z 0-9~%.:_\-;={}';
-    const URI_PROTOCOL = 'AUTO';
+    const URI_PROTOCOL        = 'AUTO';
 
     public function getURIString()
     {
@@ -70,7 +70,7 @@ class URI
 
     private function _remap($service, $params = array(), $version = '1')
     {
-        $request = new WebserviceRequest($service, $params);
+        $request  = new WebserviceRequest($service, $params);
         $response = null;
         //var_dump($resource);
         if (file_exists(ROOT_DIRECTORY . "models/apiv1/{$resource}model.php"))
@@ -183,14 +183,15 @@ class URI
         {
             // preg_quote() in PHP 5.3 escapes -, so the str_replace() and addition of - to preg_quote() is to maintain backwards
             // compatibility as many are unaware of how characters in the permitted_uri_chars will be parsed as a regex pattern
-            if (!preg_match("|^[" . str_replace(array('\\-', '\-'), '-', preg_quote(self::PERMITTED_URI_CHARS, '-')) . "]+$|i", $str))
+            if (!preg_match("|^[" . str_replace(array('\\-', '\-'), '-', preg_quote(self::PERMITTED_URI_CHARS, '-')) . "]+$|i",
+                                                                                    $str))
             {
                 throw new \Exception("The URI you submitted has disallowed characters.", HTML_400_BAD_REQUEST);
             }
         }
 
         // Convert programatic characters to entities
-        $bad = array('$', '(', ')', '%28', '%29');
+        $bad  = array('$', '(', ')', '%28', '%29');
         $good = array('&#36;', '&#40;', '&#41;', '&#40;', '&#41;');
 
         return str_replace($bad, $good, $str);
@@ -240,10 +241,10 @@ class URI
         // URI is found, and also fixes the QUERY_STRING server var and $_GET array.
         if (strncmp($uri, '?/', 2) === 0)
         {
-            $uri = substr($uri, 2);
+            $uri   = substr($uri, 2);
         }
         $parts = preg_split('#\?#i', $uri, 2);
-        $uri = $parts[0];
+        $uri   = $parts[0];
         if (isset($parts[1]))
         {
             $_SERVER['QUERY_STRING'] = $parts[1];
@@ -251,7 +252,7 @@ class URI
         } else
         {
             $_SERVER['QUERY_STRING'] = '';
-            $_GET = array();
+            $_GET                    = array();
         }
 
         if ($uri == '/' || empty($uri))

@@ -1,10 +1,21 @@
 <?php
 
-if(!defined("VIRUS")){
-    die("You are not allowed here!");    
+if (!defined("VIRUS"))
+{//prevent script direct access
+    header('HTTP/1.1 404 Not Found');
+    header("X-Powered-By: ");
+    echo "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n<html><head>\n<title>404 Not Found</title>\n</head>
+          <body>\n<h1>Not Found</h1>\n<p>The requested URL " . $_SERVER['REQUEST_URI'] . " was not found on this server.</p>\n
+          <hr>\n" . $_SERVER['SERVER_SIGNATURE'] . "\n</body></html>\n";
+    die();
 }
 
+/**
+ * ATTENTION: I have changed some things in this class.
+ *  Updating the code to a newer version from the source may lead to unexpected results.
+ */
 /* Finally, A light, permissions-checking logging class. 
+ *
  * 
  * Author	: Kenneth Katzgrau < katzgrau@gmail.com >
  * Date	: July 26, 2008
@@ -22,26 +33,26 @@ if(!defined("VIRUS")){
 class KLogger
 {
 
-    const DEBUG = 1; // Most Verbose
-    const INFO = 2; // ...
-    const WARN = 3; // ...
-    const ERROR = 4; // ...
-    const FATAL = 5; // Least Verbose
-    const OFF = 6; // Nothing at all.
-    const LOG_OPEN = 1;
+    const DEBUG       = 1; // Most Verbose
+    const INFO        = 2; // ...
+    const WARN        = 3; // ...
+    const ERROR       = 4; // ...
+    const FATAL       = 5; // Least Verbose
+    const OFF         = 6; // Nothing at all.
+    const LOG_OPEN    = 1;
     const OPEN_FAILED = 2;
-    const LOG_CLOSED = 3;
+    const LOG_CLOSED  = 3;
 
     /* Public members: Not so much of an example of encapsulation, but that's okay. */
 
-    public $Log_Status = KLogger::LOG_CLOSED;
-    public $DateFormat = "Y-m-d G:i:s";
+    public $Log_Status         = KLogger::LOG_CLOSED;
+    public $DateFormat         = "Y-m-d G:i:s";
     public $MessageQueue;
-    public $includeIP = true;
-    public $includeHostname = true;
+    public $includeIP          = true;
+    public $includeHostname    = true;
     public $includeFileAndLine = true;
     private $log_file;
-    private $priority = KLogger::INFO;
+    private $priority           = KLogger::INFO;
     private $file_handle;
 
     public function __construct($filepath, $priority, $disablePhpProtection = false)
@@ -53,9 +64,9 @@ class KLogger
         {
             $filepath .= '.php';
         }
-        $this->log_file = $filepath;
+        $this->log_file     = $filepath;
         $this->MessageQueue = array();
-        $this->priority = $priority;
+        $this->priority     = $priority;
 
         $fileExists = file_exists($this->log_file);
 //        if ($fileExists)
@@ -74,11 +85,11 @@ class KLogger
             {
                 fwrite($this->file_handle, "<?php die(); ?>\n\n#Log File Start\n");
             }
-            $this->Log_Status = KLogger::LOG_OPEN;
+            $this->Log_Status     = KLogger::LOG_OPEN;
             $this->MessageQueue[] = "The log file was opened successfully.";
         } else
         {
-            $this->Log_Status = KLogger::OPEN_FAILED;
+            $this->Log_Status     = KLogger::OPEN_FAILED;
             $this->MessageQueue[] = "The file could not be opened. Check permissions.";
         }
 
@@ -93,32 +104,32 @@ class KLogger
 
     public function LogInfo($line, array $stacktrace = null)
     {
-        $this->_Log($line, KLogger::INFO, $stacktrace  ? $stacktrace : debug_backtrace());
+        $this->_Log($line, KLogger::INFO, $stacktrace ? $stacktrace : debug_backtrace());
     }
 
     public function LogDebug($line, array $stacktrace = null)
     {
-        $this->_Log($line, KLogger::DEBUG, $stacktrace  ? $stacktrace : debug_backtrace());
+        $this->_Log($line, KLogger::DEBUG, $stacktrace ? $stacktrace : debug_backtrace());
     }
 
     public function LogWarn($line, array $stacktrace = null)
     {
-        $this->_Log($line, KLogger::WARN, $stacktrace  ? $stacktrace : debug_backtrace());
+        $this->_Log($line, KLogger::WARN, $stacktrace ? $stacktrace : debug_backtrace());
     }
 
     public function LogError($line, array $stacktrace = null)
     {
-        $this->_Log($line, KLogger::ERROR, $stacktrace  ? $stacktrace : debug_backtrace());
+        $this->_Log($line, KLogger::ERROR, $stacktrace ? $stacktrace : debug_backtrace());
     }
 
     public function LogFatal($line, array $stacktrace = null)
     {
-        $this->_Log($line, KLogger::FATAL, $stacktrace  ? $stacktrace : debug_backtrace());
+        $this->_Log($line, KLogger::FATAL, $stacktrace ? $stacktrace : debug_backtrace());
     }
 
     public function Log($line, $priority, array $stacktrace = null)
     {
-        $this->_Log($line, $priority, $stacktrace  ? $stacktrace : debug_backtrace());
+        $this->_Log($line, $priority, $stacktrace ? $stacktrace : debug_backtrace());
     }
 
     private function _Log($line, $priority, array $stacktrace = null)
@@ -126,7 +137,7 @@ class KLogger
         $fileLine = '';
         if ($this->includeFileAndLine && $stacktrace != null)
         {
-            $caller = array_shift($stacktrace);
+            $caller   = array_shift($stacktrace);
             $fileLine = ' In ' . $caller['file'] . ' on line ' . $caller['line'];
         }
         if ($this->priority <= $priority)
