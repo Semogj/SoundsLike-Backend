@@ -239,9 +239,9 @@ class CoreVIRUS
                 };
 
         \http_response_code($httpStatus);
-        self::getLogger()->LogDebug("http accept: {$_SERVER['HTTP_ACCEPT']}");
+//        self::getLogger()->LogDebug("http accept: {$_SERVER['HTTP_ACCEPT']}");
         $type = $getContentType();
-        header('Content-type: ' . ($type === 'json' ? 'application/json' : 'text/xml'));
+        header('Content-type: ' . ($type === 'json' ? 'application/json' : 'text/xml, charset=utf-8'));
         $status = getStatusCode($httpStatus);
         if ($type === 'json')
         {

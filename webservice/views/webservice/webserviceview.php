@@ -49,7 +49,7 @@ if (isset($response) && is_object($response) && $response instanceof WebserviceR
          echo $output;
     } else
     {
-         header('Content-type: text/xml');
+         header('Content-type: text/xml, charset=utf-8');
          $logger->LogDebug("Response (httpCode=$statusHttp; type=$resultType): " . $output);
          echo $output;
     }
