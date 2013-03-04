@@ -128,7 +128,7 @@ class SoundSegmentModel implements DatabaseModel
                 WHERE videoId1 = :vidid
                 AND videoId2 = :vidid
                 AND (id1 = :id OR id2 = :id)
-                ORDER BY value DESC
+                ORDER BY value ASC
                 LIMIT :offset, :limit';
 
         $statement = $db->prepare($sql);
@@ -151,7 +151,7 @@ class SoundSegmentModel implements DatabaseModel
         $sql = 'SELECT id1, start1, end1, videoId1, id2, start2, end2, videoId2, value
                 FROM SoundSegmentSimilarities
                 WHERE id1 = :id OR id2 = :id
-                ORDER BY value DESC
+                ORDER BY value ASC
                 LIMIT :offset, :limit';
         
         $statement = $db->prepare($sql);

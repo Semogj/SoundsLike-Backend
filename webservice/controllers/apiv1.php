@@ -32,7 +32,7 @@ class Apiv1 extends Controller
         {
             $errorMsg = "These aren't the droids you are looking for! Invalid service resource '$resource'.";
             $logger->LogInfo("Invalid service request 'apiv1/$resource'");
-            $response = new ErrorWebserviceResponse(WebserviceResponse::$ERR_INVALID_RESOURCE, $errorMsg);
+            $response = new ErrorWebserviceResponse(WebserviceResponse::$ERR_INVALID_RESOURCE, $errorMsg, array(), $request->getAcceptType());
             
         } else
         {

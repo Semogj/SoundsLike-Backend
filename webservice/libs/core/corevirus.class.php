@@ -25,8 +25,8 @@ class CoreVIRUS
      *
      * @static \KLogger $logger 
      */
-    private static $dbArray      = array(), $logger       = null;
-    private static $controller   = null;
+    private static $dbArray = array(), $logger = null;
+    private static $controller = null;
     private static $loadedModels = array();
 
     /**
@@ -94,7 +94,7 @@ class CoreVIRUS
      */
     public static function loadModel($model)
     {
-        $model     = strtolower(trim($model));
+        $model = strtolower(trim($model));
         $className = MODELS_NAMESPACE . '\\' . ucfirst($model . "model");
 
         if (array_key_exists($className, self::$loadedModels))
@@ -151,7 +151,7 @@ class CoreVIRUS
      */
     public static function loadService($service, $version = 1)
     {
-        $service   = strtolower(trim($service));
+        $service = strtolower(trim($service));
         $className = SERVICES_NAMESPACE . '\\' . ucfirst($service . "Service");
 
         $filename = ROOT_DIRECTORY . SERVICES_FOLTER . "/v{$version}/{$service}.php";
@@ -197,13 +197,13 @@ class CoreVIRUS
      */
     public static function loadView($view, $data)
     {
-        $view     = strtolower(trim($view));
+        $view = strtolower(trim($view));
         $filename = ROOT_DIRECTORY . VIEWS_FOLDER . "{$view}view.php";
-        $result   = false;
+        $result = false;
         if (is_file($filename) && is_readable($filename))
         {
             self::getLogger()->LogDebug("View '$view' loaded with success from file $filename.", debug_backtrace());
-            $data   = new ViewData($data);
+            $data = new ViewData($data);
             $result = include $filename;
         }
         if (!$result)
@@ -239,12 +239,13 @@ class CoreVIRUS
                 };
 
         \http_response_code($httpStatus);
-        $type   = $getContentType();
+        self::getLogger()->LogDebug("http accept: {$_SERVER['HTTP_ACCEPT']}");
+        $type = $getContentType();
         header('Content-type: ' . ($type === 'json' ? 'application/json' : 'text/xml'));
         $status = getStatusCode($httpStatus);
         if ($type === 'json')
         {
-            $outputArr                   = array('error' => array('code'        => $httpStatus, 'title'       => $title,
+            $outputArr = array('error' => array('code'        => $httpStatus, 'title'       => $title,
                     'description' => $msg));
             if (APP_DEBUG === true && !empty($debug))
                 $outputArr['error']['debug'] = $debug;

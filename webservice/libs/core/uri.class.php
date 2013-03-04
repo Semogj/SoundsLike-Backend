@@ -68,24 +68,6 @@ class URI
         return count($this->segments);
     }
 
-    private function _remap($service, $params = array(), $version = '1')
-    {
-        $request  = new WebserviceRequest($service, $params);
-        $response = null;
-        //var_dump($resource);
-        if (file_exists(ROOT_DIRECTORY . "models/apiv1/{$resource}model.php"))
-        {
-            $this->load->model('apiv1/' . $resource . 'model', $resource . 'Model');
-            $response = $this->{$resource . 'Model'}->processRequest($request);
-        } else
-        {
-            $errorMsg = "These aren't the droids you are looking for! Invalid webservice resource '$resource'.";
-            log_message('info', $errorMsg);
-            $response = new ErrorWebserviceResponse(WebserviceResponse::$ERR_INVALID_RESOURCE, $errorMsg);
-        }
-        $this->load->view('APIv1/apiv1result_view', array('response' => $response));
-    }
-
     private static function _fetch_uri_string()
     {
         $getUriString = function ($str) {
