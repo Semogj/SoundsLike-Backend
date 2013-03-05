@@ -10,6 +10,10 @@ if (!defined("VIRUS"))
     die();
 }
 
+/**
+ * NOTE: this class was modified recently, updating from the source may break the code.
+ * See class documentation bellow.
+ */
 /*
   ============================================================================================
   Filename:
@@ -37,19 +41,20 @@ if (!defined("VIRUS"))
  */
 require_once 'json/JSON.php';
 
-// Internal program-specific Debug option.
-define("DEBUG", false);
-// Maximum Recursion Depth that we can allow.
-define("MAX_RECURSION_DEPTH_ALLOWED", 25);
-// An empty string
-define("EMPTY_STR", "");
-// SimpleXMLElement object property name for attributes
-define("SIMPLE_XML_ELEMENT_OBJECT_PROPERTY_FOR_ATTRIBUTES", "@attributes");
-// SimpleXMLElement object name.
-define("SIMPLE_XML_ELEMENT_PHP_CLASS", "SimpleXMLElement");
-
 class xml2json
 {
+    // Internal program-specific Debug option.
+
+    const DEBUG = false;
+    // Maximum Recursion Depth that we can allow.
+    const MAX_RECURSION_DEPTH_ALLOWED = 25;
+    // An empty string
+    const EMPTY_STR = "";
+    // SimpleXMLElement object property name for attributes
+    const SIMPLE_XML_ELEMENT_OBJECT_PROPERTY_FOR_ATTRIBUTES = "@attributes";
+    // SimpleXMLElement object name.
+    const SIMPLE_XML_ELEMENT_PHP_CLASS = "SimpleXMLElement";
+
     /*
       =============================================================================
       Function name:
@@ -78,7 +83,9 @@ class xml2json
 
       Last Modified on:
       -----------------
-      Oct/07/2006
+      Oct/07/2006 - By the author
+      Mar/05/2013 - Returned leaf values are now converted to int, float or boolean from string, if possible.
+                    Adapted some of the code to be in the OO style of PHP 5.3. 
       =============================================================================
      */
 
@@ -98,28 +105,28 @@ class xml2json
 
         if ($simpleXmlElementObject == null)
         {
-            return(EMPTY_STR);
+            return(self::EMPTY_STR);
         }
 
-        $simpleXmlRootElementName = $simpleXmlElementObject->getName();
-        // Uncomment this line to see the inner details of the SimpleXMLElement object.
-        if (DEBUG)
+        
+        if (self::DEBUG)
         {
-            // var_dump($simpleXmlRootElementName);
-            // var_dump($simpleXmlElementObject);
+            $simpleXmlRootElementName = $simpleXmlElementObject->getName();
+            var_dump($simpleXmlRootElementName);
+            var_dump($simpleXmlElementObject);
         }
 
-        $jsonOutput = EMPTY_STR;
+        $jsonOutput = self::EMPTY_STR;
         // Let us convert the XML structure into PHP array structure.
-        $array1     = xml2json::convertSimpleXmlElementObjectIntoArray($simpleXmlElementObject);
+        $array1 = xml2json::convertSimpleXmlElementObjectIntoArray($simpleXmlElementObject);
 
         if (($array1 != null) && (sizeof($array1) > 0))
         {
             //create a new instance of Services_JSON
-            $json       = new Services_JSON();
+            $json = new Services_JSON();
             $jsonOutput = $json->encode($array1);
 
-            if (DEBUG)
+            if (self::DEBUG)
             {
                 // var_dump($array1);
                 // var_dump($jsonOutput);
@@ -183,7 +190,7 @@ class xml2json
     public static function convertSimpleXmlElementObjectIntoArray($simpleXmlElementObject, &$recursionDepth = 0)
     {
         // Keep an eye on how deeply we are involved in recursion.
-        if ($recursionDepth > MAX_RECURSION_DEPTH_ALLOWED)
+        if ($recursionDepth > self::MAX_RECURSION_DEPTH_ALLOWED)
         {
             // Fatal error. Exit now.
             return(null);
@@ -191,7 +198,7 @@ class xml2json
 
         if ($recursionDepth == 0)
         {
-            if (@get_class($simpleXmlElementObject) != SIMPLE_XML_ELEMENT_PHP_CLASS)
+            if (@get_class($simpleXmlElementObject) != self::SIMPLE_XML_ELEMENT_PHP_CLASS)
             {
                 // If the external caller doesn't call this function initially  
                 // with a SimpleXMLElement object, return now.				
@@ -204,12 +211,12 @@ class xml2json
             }
         } // End of if ($recursionDepth == 0) {		
 
-        if (@get_class($simpleXmlElementObject) == SIMPLE_XML_ELEMENT_PHP_CLASS)
+        if (@get_class($simpleXmlElementObject) == self::SIMPLE_XML_ELEMENT_PHP_CLASS)
         {
             // Get a copy of the simpleXmlElementObject
             $copyOfsimpleXmlElementObject = $simpleXmlElementObject;
             // Get the object variables in the SimpleXmlElement object for us to iterate.
-            $simpleXmlElementObject       = get_object_vars($simpleXmlElementObject);
+            $simpleXmlElementObject = get_object_vars($simpleXmlElementObject);
         }
 
         // It needs to be an array of object variables.
@@ -232,7 +239,7 @@ class xml2json
                 // Uncomment the following block of code if XML attributes are  
                 // NOT required to be returned as part of the result array.       			
                 /*
-                  if((is_string($key)) && ($key == SIMPLE_XML_ELEMENT_OBJECT_PROPERTY_FOR_ATTRIBUTES)) {
+                  if((is_string($key)) && ($key == self::SIMPLE_XML_ELEMENT_OBJECT_PROPERTY_FOR_ATTRIBUTES)) {
                   continue;
                   }
                  */
@@ -250,8 +257,8 @@ class xml2json
                 // Set the XML root element name as the root [top-level] key of 
                 // the associative array that we are going to return to the caller of this
                 // recursive function.
-                $tempArray                                                     = $resultArray;
-                $resultArray                                                   = array();
+                $tempArray = $resultArray;
+                $resultArray = array();
                 $resultArray[$callerProvidedSimpleXmlElementObject->getName()] = $tempArray;
             }
 
@@ -260,8 +267,29 @@ class xml2json
         {
             // We are now looking at either the XML attribute text or 
             // the text between the XML tags.
-            return (trim(strval($simpleXmlElementObject)));
+            return (self::convert_type(trim(strval($simpleXmlElementObject))));
         } // End of else
+    }
+
+    private static function convert_type($var)
+    {
+        if (is_numeric($var))
+        {
+            if ((float) $var != (int) $var)
+            {
+                return (float) $var;
+            } else
+            {
+                return (int) $var;
+            }
+        }
+
+        if ($var == "true")
+            return true;
+        if ($var == "false")
+            return false;
+
+        return $var;
     }
 
 // End of function convertSimpleXmlElementObjectIntoArray. 
