@@ -33,26 +33,26 @@ if (!defined("VIRUS"))
 class KLogger
 {
 
-    const DEBUG       = 100; // Most Verbose
-    const INFO        = 200; // ...
-    const WARN        = 300; // ...
-    const ERROR       = 400; // ...
-    const FATAL       = 500; // Least Verbose
-    const OFF         = 600; // Nothing at all.
-    const LOG_OPEN    = 1;
+    const DEBUG = 100; // Most Verbose
+    const INFO = 200; // ...
+    const WARN = 300; // ...
+    const ERROR = 400; // ...
+    const FATAL = 500; // Least Verbose
+    const OFF = 600; // Nothing at all.
+    const LOG_OPEN = 1;
     const OPEN_FAILED = 2;
-    const LOG_CLOSED  = 3;
+    const LOG_CLOSED = 3;
 
     /* Public members: Not so much of an example of encapsulation, but that's okay. */
 
-    public $Log_Status         = KLogger::LOG_CLOSED;
-    public $DateFormat         = "Y-m-d G:i:s";
+    public $Log_Status = KLogger::LOG_CLOSED;
+    public $DateFormat = "Y-m-d G:i:s";
     public $MessageQueue;
-    public $includeIP          = true;
-    public $includeHostname    = true;
+    public $includeIP = true;
+    public $includeHostname = true;
     public $includeFileAndLine = true;
     private $log_file;
-    private $priority           = KLogger::INFO;
+    private $priority = KLogger::INFO;
     private $file_handle;
 
     public function __construct($filepath, $priority, $disablePhpProtection = false)
@@ -64,9 +64,9 @@ class KLogger
         {
             $filepath .= '.php';
         }
-        $this->log_file     = $filepath;
+        $this->log_file = $filepath;
         $this->MessageQueue = array();
-        $this->priority     = $priority;
+        $this->priority = $priority;
 
         $fileExists = file_exists($this->log_file);
 //        if ($fileExists)
@@ -84,12 +84,16 @@ class KLogger
             if (!$fileExists && !$disablePhpProtection)
             {
                 fwrite($this->file_handle, "<?php die(); ?>\n\n#Log File Start\n");
+                //In some linux configurations, the log file is owned by the http user (eg. www-data)
+                //included in a user (eg. also www-data group). This will allow to any user in the
+                //same group to edit the log file, and disallowing reading for public.
+                chmod($this->log_file, 0760);
             }
-            $this->Log_Status     = KLogger::LOG_OPEN;
+            $this->Log_Status = KLogger::LOG_OPEN;
             $this->MessageQueue[] = "The log file was opened successfully.";
         } else
         {
-            $this->Log_Status     = KLogger::OPEN_FAILED;
+            $this->Log_Status = KLogger::OPEN_FAILED;
             $this->MessageQueue[] = "The file could not be opened. Check permissions.";
         }
 
@@ -137,7 +141,7 @@ class KLogger
         $fileLine = '';
         if ($this->includeFileAndLine && $stacktrace != null)
         {
-            $caller   = array_shift($stacktrace);
+            $caller = array_shift($stacktrace);
             $fileLine = ' In ' . $caller['file'] . ' on line ' . $caller['line'];
         }
         if ($this->priority <= $priority)
