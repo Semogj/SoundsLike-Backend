@@ -91,22 +91,22 @@ class CoreVIRUS
         self::$logger->Log($line, self::LOG_INFO, $stacktrace ? $stacktrace : debug_backtrace());
     }
 
-    public static function LogDebug($line, array $stacktrace = null)
+    public static function logDebug($line, array $stacktrace = null)
     {
         self::$logger->Log($line, self::LOG_DEBUG, $stacktrace ? $stacktrace : debug_backtrace());
     }
 
-    public static function LogWarn($line, array $stacktrace = null)
+    public static function logWarn($line, array $stacktrace = null)
     {
         self::$logger->Log($line, self::LOG_WARN, $stacktrace ? $stacktrace : debug_backtrace());
     }
 
-    public static function LogError($line, array $stacktrace = null)
+    public static function logError($line, array $stacktrace = null)
     {
         self::$logger->Log($line, self::LOG_ERROR, $stacktrace ? $stacktrace : debug_backtrace());
     }
 
-    public static function LogFatal($line, array $stacktrace = null)
+    public static function logFatal($line, array $stacktrace = null)
     {
         self::$logger->Log($line, self::LOG_FATAL, $stacktrace ? $stacktrace : debug_backtrace());
     }
