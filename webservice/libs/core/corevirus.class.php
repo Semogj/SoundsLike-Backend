@@ -21,10 +21,17 @@ if (!defined("VIRUS"))
 class CoreVIRUS
 {
 
+    const LOG_DEBUG = 100; // Most Verbose
+    const LOG_INFO = 200; // ...
+    const LOG_WARN = 300; // ...
+    const LOG_ERROR = 400; // ...
+    const LOG_FATAL = 500; // Least Verbose 
+
     /**
      *
      * @static \KLogger $logger 
      */
+
     private static $dbArray = array(), $logger = null;
     private static $controller = null;
     private static $loadedModels = array();
@@ -74,6 +81,36 @@ class CoreVIRUS
         return self::$logger;
     }
 
+    public static function log($level, $message, $stacktrace = null)
+    {
+        self::$logger->Log($line, $level, $stacktrace ? $stacktrace : debug_backtrace());
+    }
+
+    public static function logInfo($line, array $stacktrace = null)
+    {
+        self::$logger->Log($line, self::LOG_INFO, $stacktrace ? $stacktrace : debug_backtrace());
+    }
+
+    public static function LogDebug($line, array $stacktrace = null)
+    {
+        self::$logger->Log($line, self::LOG_DEBUG, $stacktrace ? $stacktrace : debug_backtrace());
+    }
+
+    public static function LogWarn($line, array $stacktrace = null)
+    {
+        self::$logger->Log($line, self::LOG_WARN, $stacktrace ? $stacktrace : debug_backtrace());
+    }
+
+    public static function LogError($line, array $stacktrace = null)
+    {
+        self::$logger->Log($line, self::LOG_ERROR, $stacktrace ? $stacktrace : debug_backtrace());
+    }
+
+    public static function LogFatal($line, array $stacktrace = null)
+    {
+        self::$logger->Log($line, self::LOG_FATAL, $stacktrace ? $stacktrace : debug_backtrace());
+    }
+
     /**
      * @deprecated since version 0.9 The framework now uses the PHP autoloading feature for namespaced classes.
      * @param string $model
@@ -114,8 +151,7 @@ class CoreVIRUS
             self::getLogger()->LogDebug("Model $model loaded with success from $path.", debug_backtrace());
             return self::$loadedModels[$className] = $modelObj;
         }
-        self::getLogger()->LogError("The model file was included but we were unable to load the model class '$className'.",
-                                    debug_backtrace());
+        self::getLogger()->LogError("The model file was included but we were unable to load the model class '$className'.", debug_backtrace());
         return false;
     }
 
@@ -164,8 +200,7 @@ class CoreVIRUS
 
         if (!includeSafe($filename))
         {
-            self::getLogger()->LogError("Unable to include service '$service' source file (path: '$filename').",
-                                        debug_backtrace());
+            self::getLogger()->LogError("Unable to include service '$service' source file (path: '$filename').", debug_backtrace());
             false;
         }
         if (class_exists($className) && ($serviceObj = new $className($service)) instanceof services\WebserviceService)
@@ -173,8 +208,7 @@ class CoreVIRUS
             self::getLogger()->LogDebug("Service '$service' loaded with success from file $filename.", debug_backtrace());
             return $serviceObj;
         }
-        self::getLogger()->LogError("The service file was included but we were unable to load the service class '$className'.",
-                                    debug_backtrace());
+        self::getLogger()->LogError("The service file was included but we were unable to load the service class '$className'.", debug_backtrace());
         return false;
     }
 
@@ -245,7 +279,7 @@ class CoreVIRUS
         $status = getStatusCode($httpStatus);
         if ($type === 'json')
         {
-            $outputArr = array('error' => array('code'        => $httpStatus, 'title'       => $title,
+            $outputArr = array('error' => array('code' => $httpStatus, 'title' => $title,
                     'description' => $msg));
             if (APP_DEBUG === true && !empty($debug))
                 $outputArr['error']['debug'] = $debug;
@@ -273,5 +307,16 @@ class CoreVIRUS
     {
         return self::$controller;
     }
+
+}
+
+class LogLevel
+{
+
+    const DEBUG = 100; // Most Verbose
+    const INFO = 200; // ...
+    const WARN = 300; // ...
+    const ERROR = 400; // ...
+    const FATAL = 500; // Least Verbose 
 
 }
