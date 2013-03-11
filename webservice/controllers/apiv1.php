@@ -23,24 +23,24 @@ class Apiv1 extends Controller
     }
     public function _remap($resource, array $params = array())
     {
-        $logger = CoreVIRUS::getLogger();
         $request = new WebserviceRequest($resource, $params);
-        $logger->LogDebug("Request: {$request->getDebugString()}.");
+        CoreVIRUS::logDebug("Request: {$request->getDebugString()}.");
+        CoreVIRUS::logDebug('Segments ' . print_r($request->getSegments(),true) . '.');
         $response = null;
         $service = CoreVIRUS::loadService($resource);
         if(!$service)
         {
             $errorMsg = "These aren't the droids you are looking for! Invalid service resource '$resource'.";
-            $logger->LogInfo("Invalid service request 'apiv1/$resource'");
+            CoreVIRUS::logInfo("Invalid service request 'apiv1/$resource'");
             $response = new ErrorWebserviceResponse(WebserviceResponse::$ERR_INVALID_RESOURCE, $errorMsg, array(), $request->getAcceptType());
             
         } else
         {
-            $logger->LogDebug('Calling processRequest() of service class ' . get_class($request) . '.');
+            CoreVIRUS::logDebug('Calling processRequest() of service class ' . get_class($request) . '.');
             $response = $service->processRequest($request);
         }
         ob_start();
-        CoreVIRUS::loadView('webservice/webservice', array('response' => $response, 'logger' => $logger));
+        CoreVIRUS::loadView('webservice/webservice', array('response' => $response, 'logger' => CoreVIRUS::getLogger()) );
         ob_end_flush();
     }
 
