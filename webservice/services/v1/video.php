@@ -14,6 +14,7 @@ use VIRUS\webservice\WebserviceCollection;
 use VIRUS\webservice\models\VideoModel;
 use VIRUS\webservice\OkWebserviceResponse;
 use VIRUS\webservice\models\SoundSegmentModel;
+use VIRUS\webservice\models\SoundTagModel;
 
 class VideoService extends WebserviceService
 {
@@ -65,14 +66,30 @@ class VideoService extends WebserviceService
                     if ($idAudioSegment === false)
                     {
                         $resultArr = SoundSegmentModel::getFiltered(SoundSegmentModel::filter()->byVideoId($idVideoSegment), $limit, $offsetPage);
-                        $output = new WebserviceCollection('soundsegment', $resultArr, null, $limit, $offsetPage);                    
+                        $output = new WebserviceCollection('soundsegment', $resultArr, null, $limit, $offsetPage);
                     } else
-                    {//we have a id segment
+                    {//we have a soundSegment id url-segment
                         switch ($request->getRawSegment(4, null))
-                        {
-                            case 'similar': 
+                        { 
+                            case 'similar':
                                 $resultArr = SoundSegmentModel::getMostSimilarInVideo($idAudioSegment, $idVideoSegment, $limit, $offsetPage);
                                 $output = new WebserviceCollection('soundsegment', $resultArr, null, $limit, $offsetPage);
+                                break;
+                            case 'soundtags': case 'soundtag': case 'tag': case 'tags':
+//                                die($idAudioSegment);
+                                switch ($request->getSegment(5, null))
+                                {
+                                    case 'user':
+                                        $userId = $request->getSegment(6, 0);
+                                        $resultArr = SoundTagModel::getUserTagsInAudioSegment($userId, $idAudioSegment, $limit, $offsetPage); //fetch result
+                                        $output = new WebserviceCollection('soundtag', $resultArr);
+                                        break;
+                                    default:
+                                        CoreVIRUS::logDebug("idAudioSegment = " . $idAudioSegment);
+                                        $resultArr = SoundTagModel::getAudioSegmentWeightedTags($idAudioSegment, $limit, $offsetPage); //fetch result
+                                        CoreVIRUS::logDebug(print_r($resultArr,true));
+                                        $output = new WebserviceCollection('soundtag', $resultArr);
+                                }
                                 break;
                             default:
                                 $resultArr = SoundSegmentModel::getSingle($idAudioSegment);
