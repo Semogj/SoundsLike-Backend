@@ -5,3 +5,4 @@
 \.conflict\~$
 ^frontend/sounds/movies/24\.S01E01$
 ^webservice/aw$
+^webservice/logs/*$
