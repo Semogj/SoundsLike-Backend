@@ -17,11 +17,11 @@ function getArrayAsXML(array $theArray, $previousKey = null)
     {
         foreach ($theArray as $key => $value)
         {
-            $sufix    = '';
+            $sufix = '';
             $valueTmp = null;
             if (is_object($value) && $value instanceof WebserviceCollection)
             {
-                $key   = $value->resourceTag;
+                $key = $value->resourceTag;
                 $sufix = " count=\"$value->count\"";
                 if ($value->page !== null)
                 {
@@ -39,14 +39,14 @@ function getArrayAsXML(array $theArray, $previousKey = null)
                 {
                     $sufix .= " totalPages=\"$value->totalPages\"";
                 }
-                $valueTmp = is_array($value->resulArray) ? getArrayAsXML($value->resulArray, $value->resourceTag) : $value    = htmlspecialchars($value->resulArray,
-                                                                                                                                                 null,
-                                                                                                                                                 'UTF-8');
-                $key      = plural($key);
+                $valueTmp = is_array($value->resulArray) ? getArrayAsXML($value->resulArray, $value->resourceTag) : $value = htmlspecialchars($value->resulArray,
+                                                                                                                                              null,
+                                                                                                                                              'UTF-8');
+                $key = plural($key);
                 $result .= "<{$key}{$sufix}>$valueTmp</$key>";
             } elseif (is_array($value))
             {
-                $key   = is_numeric($key) && $previousKey != null ? $previousKey : $key;
+                $key = is_numeric($key) && $previousKey != null ? $previousKey : $key;
                 $sufix = ' nodesCount="' . count($value) . '"';
                 $value = getArrayAsXML($value, $key);
                 $result .= "<{$key}{$sufix}>$value</$key>";
@@ -351,7 +351,7 @@ function ip_address($proxyIps = null)
     }
     if (!valid_ip($ip))
     {
-        $ip                    = '0.0.0.0';
+        $ip = '0.0.0.0';
     }
     $GLOBALS['ip_address'] = $ip;
     return $ip;
@@ -483,7 +483,7 @@ function valid_ipv6($str)
 // 0-ffff per group
 // one set of consecutive 0 groups can be collapsed to ::
 
-    $groups    = 8;
+    $groups = 8;
     $collapsed = FALSE;
 
     $chunks = array_filter(
@@ -581,7 +581,7 @@ function endsWith($haystack, $needle, $case = true)
  */
 function isPHPVersion($version)
 {
-    $version           = 'isPHPVersion' . $version;
+    $version = 'isPHPVersion' . $version;
     if (isset($GLOBALS[$version]))
         return $GLOBALS[$version];
     return $GLOBALS[$version] = version_compare(PHP_VERSION, $version, '<=');
@@ -770,7 +770,7 @@ function parseClassname($name, $asObj = false)
 {
     if ($asObj)
     {
-        $ret            = new stdClass;
+        $ret = new stdClass;
         $ret->classname = substr(strrchr($name, '\\'), 1);
         $ret->namespace = substr($name, 0, strrpos($name, '\\'));
     } else
@@ -791,4 +791,25 @@ function parseClassname($name, $asObj = false)
 function getClassName($name)
 {
     return substr(strrchr($name, '\\'), 1);
+}
+
+function convert_type($var)
+{
+    if (is_numeric($var))
+    {
+        if ((float) $var != (int) $var)
+        {
+            return (float) $var;
+        } else
+        {
+            return (int) $var;
+        }
+    }
+
+    if ($var == "true")
+        return true;
+    if ($var == "false")
+        return false;
+
+    return $var;
 }

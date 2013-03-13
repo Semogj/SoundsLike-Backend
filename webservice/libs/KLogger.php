@@ -33,15 +33,17 @@ if (!defined("VIRUS"))
 class KLogger
 {
 
-    const DEBUG = 100; // Most Verbose
+    const ALL = 0; // Most Verbose
+    const DEBUG = 100; // ... 
     const INFO = 200; // ...
-    const WARN = 300; // ...
+    const WARNING = 300; // ...
     const ERROR = 400; // ...
     const FATAL = 500; // Least Verbose
     const OFF = 600; // Nothing at all.
     const LOG_OPEN = 1;
     const OPEN_FAILED = 2;
     const LOG_CLOSED = 3;
+    const EMPTY_STR = "<NO MESSAGE>";
 
     /* Public members: Not so much of an example of encapsulation, but that's okay. */
 
@@ -106,52 +108,81 @@ class KLogger
             fclose($this->file_handle);
     }
 
-    public function LogInfo($line, array $stacktrace = null)
+    public function logInfo($str, array $stacktrace = null)
     {
-        $this->_Log($line, KLogger::INFO, $stacktrace ? $stacktrace : debug_backtrace());
+        $this->log(KLogger::INFO, $str, $stacktrace ? $stacktrace : debug_backtrace());
     }
 
-    public function LogDebug($line, array $stacktrace = null)
+    public function logDebug($str, array $stacktrace = null)
     {
-        $this->_Log($line, KLogger::DEBUG, $stacktrace ? $stacktrace : debug_backtrace());
+        $this->log(KLogger::DEBUG, $str, $stacktrace ? $stacktrace : debug_backtrace());
     }
 
-    public function LogWarn($line, array $stacktrace = null)
+    public function logWarning($str, array $stacktrace = null)
     {
-        $this->_Log($line, KLogger::WARN, $stacktrace ? $stacktrace : debug_backtrace());
+        $this->log(KLogger::WARNING, $str, $stacktrace ? $stacktrace : debug_backtrace());
     }
 
-    public function LogError($line, array $stacktrace = null)
+    public function logError($str, array $stacktrace = null)
     {
-        $this->_Log($line, KLogger::ERROR, $stacktrace ? $stacktrace : debug_backtrace());
+        $this->log(KLogger::ERROR, $str, $stacktrace ? $stacktrace : debug_backtrace());
     }
 
-    public function LogFatal($line, array $stacktrace = null)
+    public function logFatal($str, array $stacktrace = null)
     {
-        $this->_Log($line, KLogger::FATAL, $stacktrace ? $stacktrace : debug_backtrace());
+        $this->log(KLogger::FATAL, $str, $stacktrace ? $stacktrace : debug_backtrace());
     }
 
-    public function Log($line, $priority, array $stacktrace = null)
+    public function log($priority, $messageStr, array $stacktrace = null)
     {
-        $this->_Log($line, $priority, $stacktrace ? $stacktrace : debug_backtrace());
-    }
-
-    private function _Log($line, $priority, array $stacktrace = null)
-    {
-        $fileLine = '';
-        if ($this->includeFileAndLine && $stacktrace != null)
+        if ($this->includeFileAndLine)
         {
+            if ($stacktrace === null)
+                $stacktrace = debug_backtrace();
             $caller = array_shift($stacktrace);
-            $fileLine = ' In ' . $caller['file'] . ' on line ' . $caller['line'];
+            $this->_Log($priority, $messageStr, $caller['file'], $caller['line']);
+        } else
+        {
+            $this->_Log($priority, $messageStr);
         }
+    }
+
+    public function aLog($priority, $messageStr, $file = null, $line = null)
+    {
+        if ($file === null && $this->includeFileAndLine)
+        {
+            $stacktrace = debug_backtrace();
+            $caller = array_shift($stacktrace);
+            $this->_Log($priority, $messageStr, $caller['file'], $caller['line']);
+        } else
+        {
+            $this->_Log($priority, $messageStr, $file, $line);
+        }
+    }
+    public function rawLog($priority, $str, $includeTimeline = false){
         if ($this->priority <= $priority)
         {
-            $status = $this->getTimeLine($priority);
-            $this->WriteFreeFormLine("$status $line$fileLine\n");
+            $status = $includeTimeline ? $this->_getTimeLine($priority) : '';
+            $this->_writeFreeFormLine("$status $str\n");
         }
     }
 
-    public function WriteFreeFormLine($line)
+    private function _Log($priority, $str, $file = null, $line = null)
+    {
+        if(empty($str)){
+            $str = self::EMPTY_STR;
+        }
+        $fileLine = '';
+        if ($this->includeFileAndLine && !empty($file))
+            $fileLine = (!empty($line)) ? (" In $file on line $line.") : (" In $file, line unknown.");
+        if ($this->priority <= $priority)
+        {
+            $status = $this->_getTimeLine($priority);
+            $this->_writeFreeFormLine("{$status} {$str}{$fileLine}\n");
+        }
+    }
+
+    private function _writeFreeFormLine($line)
     {
         if ($this->Log_Status == KLogger::LOG_OPEN && $this->priority != KLogger::OFF)
         {
@@ -162,7 +193,7 @@ class KLogger
         }
     }
 
-    private function getTimeLine($level)
+    private function _getTimeLine($level)
     {
         $time = date($this->DateFormat);
         switch ($level)
@@ -170,8 +201,8 @@ class KLogger
             case KLogger::INFO:
                 $level = 'INFO';
                 break;
-            case KLogger::WARN:
-                $level = 'WARN';
+            case KLogger::WARNING:
+                $level = 'WARNING';
                 break;
             case KLogger::DEBUG:
                 $level = 'DEBUG';

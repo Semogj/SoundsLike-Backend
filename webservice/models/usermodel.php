@@ -55,7 +55,7 @@ class UserModel implements DatabaseModel
         $fields = array();
         if (empty($username))
         {
-            $logger->LogError('User\'s username should not be empty on UserModel::createEntry(), file ' . __FILE__ . ' line ' . __LINE__ . '.');
+            $logger->logError('User\'s username should not be empty on UserModel::createEntry(), file ' . __FILE__ . ' line ' . __LINE__ . '.');
             return false;
         }
         $fields['username'] = trim($username);
@@ -66,7 +66,7 @@ class UserModel implements DatabaseModel
         $statement->execute(array($username));
         if ($statement->rowCount() > 0)
         {
-            $logger->LogWarn('User\'s username should not be empty on UserModel::createEntry(), file ' . __FILE__ . ' line ' . __LINE__ . '.');
+            $logger->logWarning('User\'s username should not be empty on UserModel::createEntry(), file ' . __FILE__ . ' line ' . __LINE__ . '.');
             return false;
         }
 
@@ -79,11 +79,11 @@ class UserModel implements DatabaseModel
         $statement->execute(array_values($fields));
         if($statement->rowCount() > 0) {
             $insertedId = $db->lastInsertId();
-            $logger->LogWarn("A new user has been inserted successfully on the database with id $insertedId and username '$username'" .
+            $logger->logWarning("A new user has been inserted successfully on the database with id $insertedId and username '$username'" .
                     ' UserModel::createEntry(), file ' . __FILE__ . ' line ' . __LINE__ . '.');
             return $insertedId;
         } else {
-            $logger->LogError("Unknown database error while inserting a new user with the username '$username' "
+            $logger->logError("Unknown database error while inserting a new user with the username '$username' "
             .'on UserModel::createEntry(),  file ' . __FILE__ . ' line ' . __LINE__ . '.');
         }
         return false;

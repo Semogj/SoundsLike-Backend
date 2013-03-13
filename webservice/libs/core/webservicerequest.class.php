@@ -23,6 +23,7 @@ class WebserviceRequest
     const DEFAULT_CONTENT_TYPE   = 'xml';
     const DEFAULT_ACCEPT_TYPE    = 'xml';
     const DEFAULT_HTTP_METHOD    = 'GET';
+    const PARAM_DELIMITERS = ':=';
 
     private static function _splitParamKeyVal($delimitersChars, $string)
     {
@@ -46,6 +47,26 @@ class WebserviceRequest
         }
         return array($string);
     }
+    private static function convert_type($var)
+    {
+        if (is_numeric($var))
+        {
+            if ((float) $var != (int) $var)
+            {
+                return (float) $var;
+            } else
+            {
+                return (int) $var;
+            }
+        }
+
+        if ($var == "true")
+            return true;
+        if ($var == "false")
+            return false;
+
+        return $var;
+    }
 
     public function __construct($resource, array $segments)
     {
@@ -66,7 +87,7 @@ class WebserviceRequest
                 }
                 $this->rawParameters[$segmentIndex] = $param;
                 //both : and = are parameters key-value separators, e.g. /key=value/x:1;limit=2;
-                $paramArr                           = self::_splitParamKeyVal(':=', $param);
+                $paramArr                           = self::_splitParamKeyVal(self::PARAM_DELIMITERS, $param);
                 if (count($paramArr) == 2)
                 {
                     $val                           = is_numeric($paramArr[1]) ? intval($paramArr[1], 10) : trim(urldecode($paramArr[1]));
@@ -232,14 +253,29 @@ class WebserviceRequest
     {
         return !$ignoreGetParam ? $this->getSegment($getParamKey, $this->resultType) : $this->resultType;
     }
-
+    private $jsonArrayCache = null;
+    /**
+     * Obtain the value of the POST paramenter with the key $key, returning a default value if not found.
+     * The data is obtained from the content of the HTTP request. 
+     * 
+     * This function can handle xml and json content types. In case of XML content, it searches recursively through the
+     *  XML structure until it finds the required element (<$key>value</$key>) or the end of the structure. Incase of
+     *  json content, it searches for the value with a max depth of 2. In both cases, if the key is repeated, only the
+     *  first found value is returned.
+     * 
+     * The returned value is converted to a proper data type if possible.
+     * @param string $key the key to obtain from a 
+     * @param string $default
+     * @return string|boolean|int|float
+     */
     public function getPostParameter($key, $default = null)
     {
 
         switch ($this->getContentType())
         {
             case 'json':
-                $arr = $this->getContentAsJsonArray();
+                //obtain and cache the result in a property for performance on multiple calls of getPostParameter()
+                $arr = $this->jsonArrayCache !== null ? $this->jsonArrayCache : ($this->jsonArrayCache = $this->getContentAsJsonArray());
                 if (array_key_exists($key, $arr))
                 {
                     return $arr[$key];
@@ -249,15 +285,16 @@ class WebserviceRequest
                     {
                         if (is_array($v))
                         {
-                            return array_key_exists($key, $v) ? $v[$key] : $default;
+                            $result = array_key_exists($key, $v) ? $v[$key] : $default;
+                            return $this->convert_type($result);
                         }
                         break; //we only wanna check the first array elem.
                     }
-                    return $default;
+                    return $this->convert_type($default);
                 }
                 break;
             default: //xml
-                return $this->getContentFirstXmlTag($key, $default);
+                return $this->convert_type($this->getContentFirstXmlTag($key, $default));
         }
     }
 
@@ -265,5 +302,6 @@ class WebserviceRequest
     {
         return $this->method . ' ' . URI::getInstance()->getURIString() . " ContentType: $this->resultType ResultType: $this->resultType";
     }
+    
 
 }

@@ -45,12 +45,12 @@ if (isset($response) && is_object($response) && $response instanceof WebserviceR
     {
          header('Content-type: application/json');
          $output = \xml2json::transformXmlStringToJson($output);
-         $logger->LogDebug("Response (httpCode=$statusHttp; type=$resultType): " . $output);
+         $logger->logDebug("Response (httpCode=$statusHttp; type=$resultType): " . $output);
          echo $output;
     } else
     {
          header('Content-type: text/xml, charset=utf-8');
-         $logger->LogDebug("Response (httpCode=$statusHttp; type=$resultType): " . $output);
+         $logger->logDebug("Response (httpCode=$statusHttp; type=$resultType): " . $output);
          echo $output;
     }
 //    $b=ob_get_contents();
@@ -59,7 +59,7 @@ if (isset($response) && is_object($response) && $response instanceof WebserviceR
 } else
 {
 //    ob_end_flush();
-    $logger->LogFatal('The $response parameter in apiv1result_view is not a valid output array.');
+    $logger->logFatal('The $response parameter in apiv1result_view is not a valid output array.');
     showErrorResponse(500, getStatusCode(500), "An unexpected error has happened while processing your request.", '', false);
 }
 

@@ -64,7 +64,7 @@ class VideoModel implements DatabaseModel
         $fields = array();
         if (empty($title))
         {
-            $logger->LogWarn('Video title should not be empty on VideoModel::createEntry(), file ' . __FILE__ . ' line ' . __LINE__ . '.');
+            $logger->logWarning('Video title should not be empty on VideoModel::createEntry(), file ' . __FILE__ . ' line ' . __LINE__ . '.');
             return false;
         }
         $fields[self::FIELD_TITLE] = trim($title);
@@ -75,7 +75,7 @@ class VideoModel implements DatabaseModel
             $fields[self::FIELD_GENRES] = trim($genres);
         }else
         {
-            $logger->LogWarn('Empty video genres on VideoModel::createEntry(), file ' . __FILE__ . ' line ' . __LINE__ . '.');
+            $logger->logWarning('Empty video genres on VideoModel::createEntry(), file ' . __FILE__ . ' line ' . __LINE__ . '.');
             $genres = false;
         }
         if (empty($actors))
@@ -86,7 +86,7 @@ class VideoModel implements DatabaseModel
             $fields[self::FIELD_ACTORS] = trim($actors);
         }else
         {
-            $logger->LogWarn('Empty video actors on VideoModel::createEntry(), file ' . __FILE__ . ' line ' . __LINE__ . '.');
+            $logger->logWarning('Empty video actors on VideoModel::createEntry(), file ' . __FILE__ . ' line ' . __LINE__ . '.');
             $actors = false;
         }
         if (!empty($year))
@@ -94,7 +94,7 @@ class VideoModel implements DatabaseModel
             $year = validate_pos_int($year, -1);
             if ($year <= 0)
             {
-                $logger->LogWarn('Invalid video year on VideoModel::createEntry(), file ' . __FILE__ . ' line ' . __LINE__ . '.');
+                $logger->logWarning('Invalid video year on VideoModel::createEntry(), file ' . __FILE__ . ' line ' . __LINE__ . '.');
                 return false;
             }
             $fields[self::FIELD_YEAR] = trim($year);

@@ -13,7 +13,7 @@ if (!defined("VIRUS"))
 }
 
 /**
- * Class for global database access,
+ * Class for global database and logger access.
  * (I could do it simply by global variable, but I dislike that way!)
  *
  * @author semogj
@@ -21,9 +21,10 @@ if (!defined("VIRUS"))
 class CoreVIRUS
 {
 
+    const LOG_ALL = 0;
     const LOG_DEBUG = 100; // Most Verbose
     const LOG_INFO = 200; // ...
-    const LOG_WARN = 300; // ...
+    const LOG_WARNING = 300; // ...
     const LOG_ERROR = 400; // ...
     const LOG_FATAL = 500; // Least Verbose 
 
@@ -32,7 +33,8 @@ class CoreVIRUS
      * @static \KLogger $logger 
      */
 
-    private static $dbArray = array(), $logger = null;
+    private static $dbArray = array(),
+            $logger = null;
     private static $controller = null;
     private static $loadedModels = array();
 
@@ -80,35 +82,65 @@ class CoreVIRUS
     {
         return self::$logger;
     }
-
-    public static function log($level, $message, $stacktrace = null)
+    /**
+     * Alternative log method to log() with file and line parameters.
+     * The entry is prefixed with a timeline and suffixed with the error location.
+     * If the file parameter is null or empty, this function is equivalent to the normal log() method;
+     * @param int $level the logger level. Please use CoreVIRUS::LOG_* constants.
+     * @param string $message the message to be logged.
+     * @param string $file the file name or path where the error did happen.
+     * @param int|string $line the file line where the error did happen.
+     */
+    public static function aLog($level, $message, $file = null, $line = null)
     {
-        self::$logger->Log($line, $level, $stacktrace ? $stacktrace : debug_backtrace());
+        self::$logger->aLog($level, $message, $file, $line);
+    }
+
+    /**
+     * Logs an error.
+     * The entry is prefixed with a timeline and suffixed with the error location.
+     * @param int $level the logger level. Please use CoreVIRUS::LOG_* constants.
+     * @param string $message the message to be logged.
+     * @param array $stacktrace if you want to report the offending line from the stacktrace, use debug_backtrace() array.
+     */
+    public static function log($level, $message, array $stacktrace = null)
+    {
+        self::$logger->log($level, $line, $stacktrace ? $stacktrace : debug_backtrace());
+    }
+    /**
+     * Logs an entry to the log file without any prefix or sufix.
+     * @param int $level 
+     * @param string $rawMessage
+     * @param boolean $includeTimeline true if you want to be prefixed with the default timeline.
+     */
+    public static function rawLog($level, $rawMessage, $includeTimeline = false)
+    {
+        self::$logger->rawLog($level, $rawMessage, $includeTimeline);
     }
 
     public static function logInfo($line, array $stacktrace = null)
     {
-        self::$logger->Log($line, self::LOG_INFO, $stacktrace ? $stacktrace : debug_backtrace());
+        self::$logger->log(self::LOG_INFO, $line, $stacktrace ? $stacktrace : debug_backtrace());
     }
 
     public static function logDebug($line, array $stacktrace = null)
     {
-        self::$logger->Log($line, self::LOG_DEBUG, $stacktrace ? $stacktrace : debug_backtrace());
+        self::$logger->log(self::LOG_DEBUG, $line, $stacktrace ? $stacktrace : debug_backtrace());
     }
 
-    public static function logWarn($line, array $stacktrace = null)
+    public static function logWarning($line, array $stacktrace = null)
     {
-        self::$logger->Log($line, self::LOG_WARN, $stacktrace ? $stacktrace : debug_backtrace());
+        self::$logger->log(self::LOG_WARN, $line, $stacktrace ? $stacktrace : debug_backtrace());
     }
 
     public static function logError($line, array $stacktrace = null)
     {
-        self::$logger->Log($line, self::LOG_ERROR, $stacktrace ? $stacktrace : debug_backtrace());
+        self::$logger->log(self::LOG_ERROR, $line, $stacktrace ? $stacktrace : debug_backtrace());
     }
 
     public static function logFatal($line, array $stacktrace = null)
     {
-        self::$logger->Log($line, self::LOG_FATAL, $stacktrace ? $stacktrace : debug_backtrace());
+        self::$logger->log(self::LOG_FATAL, $line, $stacktrace ? $stacktrace : debug_backtrace());
     }
 
     /**
@@ -142,16 +174,16 @@ class CoreVIRUS
         $path = ROOT_DIRECTORY . MODELS_FOLDER . "{$model}model.php";
         if (!includeSafe($path))
         {
-            self::getLogger()->LogError("Unable to include model '$model' (path: '$path').", debug_backtrace());
+            self::getLogger()->logError("Unable to include model '$model' (path: '$path').", debug_backtrace());
             false;
         }
 
         if (class_exists($className) && ($modelObj = new $className) instanceof models\Model)
         {
-            self::getLogger()->LogDebug("Model $model loaded with success from $path.", debug_backtrace());
+            self::getLogger()->logDebug("Model $model loaded with success from $path.", debug_backtrace());
             return self::$loadedModels[$className] = $modelObj;
         }
-        self::getLogger()->LogError("The model file was included but we were unable to load the model class '$className'.", debug_backtrace());
+        self::getLogger()->logError("The model file was included but we were unable to load the model class '$className'.", debug_backtrace());
         return false;
     }
 
@@ -178,6 +210,37 @@ class CoreVIRUS
                 });
     }
 
+    public static function registerErrorHandler()
+    {
+        set_error_handler(
+                function ($errno, $errstr, $errfile, $errline) {
+
+                    switch ($errno)
+                    {
+                        case E_USER_ERROR: case E_ERROR: case E_RECOVERABLE_ERROR: //lets dream for the day where we can catch an E_ERROR!
+                            CoreVIRUS::aLog("Fatal Error: [$errno] $errstr", $errfile, $errline);
+                            CoreVIRUS::displayErrorResponse(HTML_500_INTERNAL_SERVER_ERROR, HTML_500_DEFAULT_TITLE, HTML_500_DEFAULT_MESSAGE);
+                            die(1);
+                            break;
+
+                        case E_WARNING: case E_USER_WARNING: case E_CORE_WARNING: case E_STRICT: case E_DEPRECATED: case E_USER_DEPRECATED:
+                            CoreVIRUS::aLog(CoreVIRUS::LOG_WARNING,"Warning: [$errno] $errstr", $errfile, $errline);
+                            break;
+                        case E_NOTICE: E_USER_NOTICE:
+                            CoreVIRUS::aLog(CoreVIRUS::LOG_WARNING,"Notice: [$errno] $errstr", $errfile, $errline);
+                            break;
+
+                        default:
+                            CoreVIRUS::aLog(CoreVIRUS::LOG_ERROR, "Unknown Error: [$errno] $errstr", $errfile, $errline);
+                            break;
+                    }
+
+                    /* Don't execute PHP internal error handler */
+                    return true;
+                }
+        );
+    }
+
     /**
      * Verifies and try to load a service from the service folder.
      * NOTE: this is not meant to be invoked by the developper!
@@ -194,21 +257,21 @@ class CoreVIRUS
         //is it already loaded?
         if (class_exists($className))
         {
-            self::getLogger()->LogWarn("Attempt to load an already loaded service ($service)!", debug_backtrace());
+            self::getLogger()->logWarning("Attempt to load an already loaded service ($service)!", debug_backtrace());
             return new $className;
         }
 
         if (!includeSafe($filename))
         {
-            self::getLogger()->LogError("Unable to include service '$service' source file (path: '$filename').", debug_backtrace());
+            self::getLogger()->logError("Unable to include service '$service' source file (path: '$filename').", debug_backtrace());
             false;
         }
         if (class_exists($className) && ($serviceObj = new $className($service)) instanceof services\WebserviceService)
         {
-            self::getLogger()->LogDebug("Service '$service' loaded with success from file $filename.", debug_backtrace());
+            self::getLogger()->logDebug("Service '$service' loaded with success from file $filename.", debug_backtrace());
             return $serviceObj;
         }
-        self::getLogger()->LogError("The service file was included but we were unable to load the service class '$className'.", debug_backtrace());
+        self::getLogger()->logError("The service file was included but we were unable to load the service class '$className'.", debug_backtrace());
         return false;
     }
 
@@ -236,13 +299,13 @@ class CoreVIRUS
         $result = false;
         if (is_file($filename) && is_readable($filename))
         {
-            self::getLogger()->LogDebug("View '$view' loaded with success from file $filename.", debug_backtrace());
+            self::getLogger()->logDebug("View '$view' loaded with success from file $filename.", debug_backtrace());
             $data = new ViewData($data);
             $result = include $filename;
         }
         if (!$result)
         {
-            self::getLogger()->LogError("Unable to include view '$view' (path: '$filename').", debug_backtrace());
+            self::getLogger()->logError("Unable to include view '$view' (path: '$filename').", debug_backtrace());
         }
         return $result;
     }

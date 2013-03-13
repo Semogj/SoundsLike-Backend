@@ -58,19 +58,19 @@ abstract class WebserviceService
                 $this->afterRequest($request);
                 if (empty($result) || !($result instanceof WebserviceResponse))
                 {
-                    $logger->LogError("Unexpected result when processing the method '$requestMethod' of resource  '{$request->getResource()}'.");
+                    $logger->logError("Unexpected result when processing the method '$requestMethod' of resource  '{$request->getResource()}'.");
                     return new ErrorWebserviceResponse(WebserviceResponse::$ERR_OPERATION_FAILED, 'The service returned an unexpected result.');
                 }
                 return $result;
             } else
             {
 
-                $logger->LogInfo("Call to invalid webservice method '$requestMethod' of resource '{$request->getResource()}'.");
+                $logger->logInfo("Call to invalid webservice method '$requestMethod' of resource '{$request->getResource()}'.");
                 return new ErrorWebserviceResponse(WebserviceResponse::$ERR_INVALID_METHOD, "Invalid resource method $requestMethod.");
             }
         } catch (Exception $ex)
         {
-            $logger->LogError("Exception raised when processing the method '$requestMethod' of resource '{$request->getResource()}'.
+            $logger->logError("Exception raised when processing the method '$requestMethod' of resource '{$request->getResource()}'.
                     Exception message: {$ex->getMessage()} at line {$ex->getLine()} of file {$ex->getFile()}.");
             return new ErrorWebserviceResponse(WebserviceResponse::$ERR_OPERATION_FAILED, 'The service went kaputs while processing your request...');
         }

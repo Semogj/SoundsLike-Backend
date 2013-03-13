@@ -58,7 +58,7 @@ class SoundTagModel implements DatabaseModel
         if (count(UserModel::getSingle($userId)) === 0)
         {
 
-            $logger->LogWarn("Invalid userId '$userId' in SoundTagModel::createEntry(), file " . __FILE__ . ' line ' . __LINE__ . '.');
+            $logger->logWarning("Invalid userId '$userId' in SoundTagModel::createEntry(), file " . __FILE__ . ' line ' . __LINE__ . '.');
             return false;
         }
         $fields['userId'] = $userId;
@@ -66,14 +66,14 @@ class SoundTagModel implements DatabaseModel
         //check if soundSegmentId is valid (exists in the database)
         if (count(UserModel::getSingle($soundSegmentId)) === 0)
         {
-            $logger->LogWarn("Invalid soundSegmentId '$soundSegmentId' in SoundTagModel::createEntry(), file " . __FILE__ . ' line ' . __LINE__ . '.');
+            $logger->logWarning("Invalid soundSegmentId '$soundSegmentId' in SoundTagModel::createEntry(), file " . __FILE__ . ' line ' . __LINE__ . '.');
             return false;
         }
         $fields['soundSegmentId'] = $soundSegmentId;
 
         if (empty($tagName))
         {
-            $logger->LogWarn("The tagname cannot be empty, in SoundTagModel::createEntry(), file " . __FILE__ . ' line ' . __LINE__ . '.');
+            $logger->logWarning("The tagname cannot be empty, in SoundTagModel::createEntry(), file " . __FILE__ . ' line ' . __LINE__ . '.');
             return false;
         }
         $fields['tagName'] = trim($tagName);
@@ -91,12 +91,12 @@ class SoundTagModel implements DatabaseModel
         if ($statement->rowCount() > 0)
         {
             $insertedId = $db->lastInsertId();
-            $logger->LogWarn("A new soundtag has been inserted successfully on the database with id $insertedId'" .
+            $logger->logWarning("A new soundtag has been inserted successfully on the database with id $insertedId'" .
                     ' SoundTagModel::createEntry(), file ' . __FILE__ . ' line ' . __LINE__ . '.');
             return $insertedId;
         } else
         {
-            $logger->LogError("Database error while inserting a new soundTag. The soundTag may already exist! " .
+            $logger->logError("Database error while inserting a new soundTag. The soundTag may already exist! " .
                     'On SoundTagModel::createEntry(),  file ' . __FILE__ . ' line ' . __LINE__ . '.');
         }
         return false;
@@ -120,7 +120,7 @@ class SoundTagModel implements DatabaseModel
         $statement->bindValue(':limit', $limit, PDO::PARAM_INT);
         if (!$statement->execute())
         {
-            CoreVIRUS::getLogger()->LogError('Unknown database error while executing the statement' .
+            CoreVIRUS::getLogger()->logError('Unknown database error while executing the statement' .
                     ',in SoundTagModel::getUserTags(), file ' . __FILE__ . ' line ' . __LINE__ . '.');
             return array();
         }
@@ -150,7 +150,7 @@ class SoundTagModel implements DatabaseModel
         $statement->bindValue(':limit', $limit, PDO::PARAM_INT);
         if (!$statement->execute())
         {
-            CoreVIRUS::getLogger()->LogError('Unknown database error while executing the statement' .
+            CoreVIRUS::getLogger()->logError('Unknown database error while executing the statement' .
                     ',in SoundTagModel::getAudioSegmentWeightedTags(), file ' . __FILE__ . ' line ' . __LINE__ . '.');
             return array();
         }
@@ -177,7 +177,7 @@ class SoundTagModel implements DatabaseModel
         $statement->bindValue(':limit', $limit, PDO::PARAM_INT);
         if (!$statement->execute())
         {
-            CoreVIRUS::getLogger()->LogError('Unknown database error while executing the statement' .
+            CoreVIRUS::getLogger()->logError('Unknown database error while executing the statement' .
                     ',in SoundTagModel::getUserTagsInAudioSegment(), file ' . __FILE__ . ' line ' . __LINE__ . '.');
             return array();
         }
