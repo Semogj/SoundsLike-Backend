@@ -1,0 +1,186 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <title></title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <link rel="stylesheet" href="css/apidoc.css" type="text/css"/>
+
+    </head>
+    <body>
+        <div id="wrapper">
+            <h1>Webservice API version 1 Documentation</h1>
+            <h2>Base URI</h2>
+            <p>Requests to the api are sent as HTTP messages using a URI to indicate what resource 
+                collection is desired and HTTP headers to provide context for the request.</p>
+            <p>The Web Service uses a RESTFULL api and supports the following HTTP methods: GET, POST,
+                PUT and DELETE.</p>
+            <p>The webservice is accessible by using the following generic URI path:</p>
+            <p><span class="textB">&lt;baseUrl&gt;/api/[&lt;resource&gt;/[&lt;entryId&gt;[/&lt;resourceAssoc&gt;]]][/[&lt;parameter&gt;]*]</span></p>
+            <p><span class="textB">Where:</span></p>
+            <ul>
+                <li><span class="textB">&lt;baseUrl&gt;</span> is the base URI of the webservice api instance. Example: 
+                    http://localhost/VIRUS-AudioEvents-Webservice/webservice/index.php/apiv1/
+                <li><span class="textB">&lt;resource&gt;</span> is the wanted resource <span class="textU">collection</span> that you want 
+                to access.</li>
+                <li><span class="textB">&lt;entryId&gt;</span> an specific id for operations with a specific &lt;resource&gt
+                    collection entry.</li>
+                <li><span class="textB">&lt;resourceAssoc&gt;</span> associated &lt;resource&gt;. This entry is limited 
+                    by the &lt;entryId&gt. Example: GET "/api/owner/123/dogs/" should get all the dogs that belong to the owner with id 123. Please note that the resources in this example do not belong to this webservice! </li>
+                <li><span class="textB">&lt;parameter&gt;</span> aditional request parameters in the format [key:value]. 
+                    All available parameters are detailed below.</li>
+                <li><span class="textB">Note:</span> The method is indicated by the HTTP request method.
+            </ul>
+
+            <h2>Resources Collections</h2>
+            <p>A resource identifies an object or service (commonly referred to as "nouns" in REST terminology). For example, a named place is a resource, and a unique URL exists to retrieve it. Resources are referred to in the singular ("place," "parent," etc.). </p>
+            <p>A collection is a list of resources. Whenever zero or more objects can be returned, a collection is used. Collections are referred to in the plural ("ancestors," "children," etc.). </p>
+            <p><span class="textB">The following collections are available:</span><p>
+            <ul>
+                <li><span class="textB">video</span> - A collection of videos. Videos represents existing movies that have been released or are to be released. It can include diferent types of movies</li>
+                <li><span class="textB">soundsegment</span> - A collection of audio fragments from videos present in the database.</li>
+                <li><span class="textB">user</span> -  A collection of Users.</li>
+                <li><span class="textB">soundtag</span> - A collection of tags given by users and associated to audio segments.</li>
+            </ul>
+            <p><span class="textB">The following collection associations are available:</span><p>
+            <ul>
+                <li><span class="textB">/video/&lt;video-id&gt;/</span>
+                    <ul>
+                        <li><span class="textB">soundsegment</span> - Collection of audio segments associated to a selected &lt;video-id&gt;.</li>
+                    </ul>
+                </li>
+                <li><span class="textB">/video/&lt;video-id&gt;/soundsegment/&lt;segment-id&gt;</span>
+                    <ul>
+                        <li><span class="textB">similar</span> - Collection of similar audio segments related to a selected audio segment, ONLY inside the selected video. For selecting similar segments in other videos, use the /soundsegment/ service.</li>
+                        <li><span class="textB">soundtag</span> - Collection of tags associated to the selected audio segment with &lt;segment-id&gt; id.</li>
+                    </ul>
+                </li>
+                <li><span class="textB">/soundsegment/&lt;segment-id&gt;/</span>
+                    <ul>
+                        <li><span class="textB">similar</span> - Collection of similar audio segments related to a selected audio segment. For selecting similar segments inside a single video, use the /video/ service.</li>
+                        <li><span class="textB">soundtag</span> - Collection of tags associated to the selected audio segment with &lt;segment-id&gt; id.</li>
+                    </ul>
+                </li>
+                <li><span class="textB">/soundsegment/&lt;segment-id&gt;/soundtag/</span> or <span class="textB">/video/&lt;video-id&gt;/soundsegment/&lt;segment-id&gt;/</span>
+                    <ul>
+                        <li><span class="textB">user/&lt;user-id&gt;</span> - Filters the soundtag collection by the specified &lt;user-id&gt;.</li>
+                    </ul>
+                </li>
+                <li><span class="textB">/user/&lt;user-id&gt;/</span>
+                    <ul>
+                        <li><span class="textB">soundtag</span> - Collection of all inserted tags by the user with id &lt;user-id&gt;, ordered by inserted time.</li>
+                    </ul>
+                </li>
+                <li>Teams
+                       
+                </li>
+            </ul>
+            <h2>Errors</h2>
+            <p>All api errors are sent as html status code.</p>
+            <p>Example:</p>
+            <pre><code>&lt;aw012 status=&quot;error&quot; httpStatus=&quot;404&quot;&gt;
+	&lt;error nodesCount=&quot;5&quot;&gt;
+		&lt;http_code&gt;404&lt;/http_code&gt;
+		&lt;error_code&gt;2&lt;/error_code&gt;
+		&lt;error_title&gt;Invalid Resource&lt;/error_title&gt;
+		&lt;error_description&gt;Invalid webservice resource 'index'.&lt;/error_description&gt;
+		&lt;error_messages nodesCount=&quot;0&quot;/&gt;
+	&lt;/error&gt;
+&lt;/aw012&gt;</code></pre>
+            <p><span class="textB">List of errors:</span></p>
+            <ul>
+                <li>Error code 2 - Invalid Resource - The user demanded an invalid or inexistent resource. The error is mapped to HTTP status code '404 Not Found'</li>
+                <li>Error code 3 - Invalid Method - The user demanded an invalid or inexistent method from an existing resource. The error is mapped to HTTP status code '405 Not Found'</li>
+                <li>Error code 4 - Authentication Failed - The user request needs to authenticate with the server before accessing this method, or the authentication request failed. The error is mapped to HTTP status code '405 Network Authentication Required'</li>
+                <li>Error code 5 - Invalid Format - The request format is invalid. The error is mapped to HTTP status code '400 Bad Request'</li>
+                <li>Error code 6 - Invalid Parameters - One or more of the url or POST parameters are invalid. The error is mapped to HTTP status code '400 Bad Request'</li>
+                <li>Error code 7 - Operation Failed - The request processing ends in a "cute" little error on the server. The error is mapped to HTTP status code '500 Internal Server Error'</li>
+                <li>Error code 8 - Service Offline - The request service, resource or method is currently not available and maybe in maintenance. The error is mapped to HTTP status code '503 Service Unavailable'</li>
+            </ul>
+            <h2>Webservice Usage Examples</h2>
+            <h3>Accessing Webservice Data - GET</h3>
+            <div class="example">
+                <h3>Getting all entities. By default the first page will be returned with a maximum of 100 entries in XML.</h3>
+                <a href="http://localhost/aw2011-12/index.php/apiv2/entities/" target="_blank">GET http://localhost/aw2011-12/index.php/apiv2/entities/</a>
+                <div class="box info">
+                    <p><span class="strong">Note: </span>All GETs results sets are limited by default to a maximum of 100 entries by page. You can change the limit by using the 'limit' parameter, and change the page using the 'page' parameter.</p>
+                    <p><span class="strong">Note: </span>The response format is by default returned as XML. You must use the HTML 'Request-Type' field to change the result format. Currently only 'json' is supported as alternative.</p>
+                    <p><span class="strong">Note: </span>If no results are to be found in GET request, a empty set is returned.</p>
+                </div>
+            </div>
+            <div class="example">
+                <h3>Getting all entities, with a limit of 5 entries by page.</h3>
+                <a href="http://localhost/aw2011-12/index.php/apiv2/entities/limit:5" target="_blank">GET http://localhost/aw2011-12/index.php/apiv2/entities/limit:5</a>
+            </div>
+            <div class="example">
+                <h3>Getting all entities, now the third page, each one with 5 entries.</h3>
+                <a href="http://localhost/aw2011-12/index.php/apiv2/entities/page:3/limit:5" target="_blank">GET http://localhost/aw2011-12/index.php/apiv2/entities/limit:5</a>
+            </div>
+            <div class="example">
+                <h3>Getting the entity with the id 1483.</h3>
+                <a href="http://localhost/aw2011-12/index.php/apiv2/entities/1483/" target="_blank">GET http://localhost/aw2011-12/index.php/apiv2/entities/1483/</a>
+                <div class="box info">
+                    <p><span class="strong">Note: After the base url (http://&lt;baseurl&gt;/apiv2), the first segment refers to the resource collection.
+                            The second parameter refers to a specific resource entry ID if and only if the segment is a valid Integer string.</span> </p>
+                    <p><span class="strong">Note: The third parameter refers to the associated resource. It must be a simple string representing a existing valid resource.</span> </p>
+                </div>
+            </div>
+            <div class="example">
+                <h3>Getting all articles associated to the entity with id 1483, result limited by 10 entries.</h3>
+                <a href="http://localhost/aw2011-12/index.php/apiv2/entities/1483/articles/limit:10" target="_blank">GET http://localhost/aw2011-12/index.php/apiv2/entities/1483/articles/limit:10</a>
+            </div>
+            <div class="example">
+                <h3>The following url formats are also valid for parameters after the resource segment</h3>
+                <p><a href="http://localhost/aw2011-12/index.php/apiv2/entities/limit:5/page=2" target="_blank">GET http://localhost/aw2011-12/index.php/apiv2/entities/limit:5/page=2</a></p>
+                <p><a href="http://localhost/aw2011-12/index.php/apiv2/entities/limit:5;page:2" target="_blank">GET http://localhost/aw2011-12/index.php/apiv2/entities/limit:5;page:2</a></p>
+                <p><a href="http://localhost/aw2011-12/index.php/apiv2/entities/123;articles;limit:5;page:2" target="_blank">GET http://localhost/aw2011-12/index.php/apiv2/entities/123;articles;limit:5;page:2</a></p>
+            </div>
+
+            <div class="example">
+                <h3>Get all articles</h3>
+                <a href="http://localhost/aw2011-12/index.php/apiv2/articles" target="_blank">GET http://localhost/aw2011-12/index.php/apiv2/articles</a>
+            </div>
+            <div class="example">
+                <h3>Get all articles in Lisboa</h3>
+                <a href="http://localhost/aw2011-12/index.php/apiv2/articles/fLocalString:lisboa" target="_blank">GET http://localhost/aw2011-12/index.php/apiv2/articles</a>
+            </div>
+            <div class="example">
+                <h3>Get all articles in geographic around location 98,1234567 12,9876543 (latitude, longitude), with a maximum radius of 10.000 meters</h3>
+                <a href="http://localhost/aw2011-12/index.php/apiv2/articles/fLatitude:98.1234567/fLongitude:12.9876543/fRadius=10000/" target="_blank">GET http://localhost/aw2011-12/index.php/apiv2/articles/fLatitude:98.1234567/fLongitude:12.9876543/fRadius=10000/</a>
+            </div>
+            <div class="example">
+                <h3>Get all articles associated with the entities 1, 2, 100 and 23, filtered by the word "benfica".</h3>
+                <a href="http://localhost/aw2011-12/index.php/apiv2/articles/fEntities={1,2,100,23}/fWords=benfica/" target="_blank">GET http://localhost/aw2011-12/index.php/apiv2/articles/fEntities={1,2,100,23}/fWords=benfica</a>
+                <div class="box info">
+                    <p><span class="strong">Note: </span>The search words must be urlencoded! An array notation can be used such as "fWords={word1,this%20phrase%20hash%20spaces,word2}" or a simple sentence with spaces encoded such as "fWords=this%20phrase%20hash%20spaces".</p>
+                </div>
+            </div>
+            <div class="example">
+                <h3>Get all articles in the time period of 01/01/1970 00:00 to 05/10/2012 06:15.</h3>
+                <a href="http://localhost/aw2011-12/index.php/apiv2/articles/fBotDate:0/fTopDate:1336648528" target="_blank">GET http://localhost/aw2011-12/index.php/apiv2/articles/fBotDate:0/fTopDate:1336648528</a>
+                <div class="box info">
+                    <p><span class="strong">Note: </span>The "fTopDate" and "fBotDate" parameters must be valid numeric string representing the seconds since 01-01-1970 00:00 (Unix timestamp).</p>
+                </div>
+            </div>
+            <h3>Submiting Data To The Webservice - POST </h3>
+
+            <div class="example">
+                <h3>Insert a new Entity</h3>
+                <p>POST http://localhost/aw2011-12/index.php/apiv2/entities/</p>
+                <p><span class="textB">HTML Request body:</span></p>
+                <pre><code>&lt;entity&gt;
+    &lt;name&gt;test&lt;/name&gt;
+    &lt;context&gt;teste&lt;/context&gt;
+&lt;/entity&gt;        </code></pre>
+
+                <p><span class="textB">Response body:</span></p>
+                <pre><code>&lt;aw012 status=&quot;ok&quot; httpStatus=&quot;201&quot;&gt;
+   &lt;insert_id&gt;1826&lt;/insert_id&gt;
+&lt;/aw012&gt;</code></pre>
+                <div class="box info">
+                    <p><span class="strong">Note: </span>The optionals fields can be omited from the HTML POST request body.</p>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
