@@ -9,6 +9,9 @@ namespace VIRUS\webservice;
  *  - Limitation of logger entries
  *  - File loggers organization
  *  - Services alias
+ *  - Verify if can handle the accepted type of HTTP request
+ *  - API keys (utilities & support)
+ *  - API authentication utilities (auth tokens)
  */
 $config = array(
     'dbDriver' => 'mysql',
