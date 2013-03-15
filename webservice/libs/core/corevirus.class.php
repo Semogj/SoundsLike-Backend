@@ -113,7 +113,7 @@ class CoreVIRUS
      * @param string $rawMessage
      * @param boolean $includeTimeline true if you want to be prefixed with the default timeline.
      */
-    public static function rawLog($level, $rawMessage, $includeTimeline = false)
+    public static function logRaw($level, $rawMessage, $includeTimeline = false)
     {
         self::$logger->rawLog($level, $rawMessage, $includeTimeline);
     }
