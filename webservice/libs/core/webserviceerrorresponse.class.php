@@ -24,7 +24,7 @@ class WebserviceErrorResponse extends WebserviceResponse
         $this->setOutputArray($errorArr);
     }
 
-    public static function getErrorResponse($constOrStatusCode, $resultType = 'xml', $details = array(), $description = null, $title = null)
+    public static function getErrorResponse($constOrStatusCode, $resultType = 'xml', $message = null, array $details = array() , $title = null)
     {
 
         switch ($constOrStatusCode)
@@ -33,54 +33,54 @@ class WebserviceErrorResponse extends WebserviceResponse
                 $constOrStatusCode = 404;
                 if (!empty($title))
                     $title = 'Invalid Resource';
-                if (!empty($description))
-                    $description = 'This resource does not exist';
+                if (!empty($message))
+                    $message = 'This resource does not exist';
                 break;
             case self::ERR_INVALID_METHOD:
                 $constOrStatusCode = 405;
             case 405: //405 Method Not Allowed
                 if (!empty($title))
                     $title = 'Invalid Method';
-                if (!empty($description))
-                    $description = 'No method with that name in this service';
+                if (!empty($message))
+                    $message = 'No method with that name in this service';
                 break;
             case self::ERR_AUTHENTICATION_FAILED:
                 $constOrStatusCode = 511;
             case 401: case 402: case 403: //Unauthorized, Payment Required, Forbidden
                 if (!empty($title))
                     $title = 'Authentication Failed';
-                if (!empty($description))
-                    $description = 'You do not have permissions to access the service';
+                if (!empty($message))
+                    $message = 'You do not have permissions to access the service';
                 break;
             case self::ERR_INVALID_FORMAT:
                 $constOrStatusCode = 400;
             case 400: //Bad Request
                 if (!empty($title))
                     $title = 'Invalid Format';
-                if (!empty($description))
-                    $description = 'The service doesn\'t exist in that format';
+                if (!empty($message))
+                    $message = 'The service doesn\'t exist in that format';
                 break;
             case self::ERR_INVALID_PARAMETERS:
                 $constOrStatusCode = 400;
                 if (!empty($title))
                     $title = 'Invalid Parameter';
-                if (!empty($description))
-                    $description = 'Your request is missing a required parameter';
+                if (!empty($message))
+                    $message = 'Your request is missing a required parameter';
                 break;
             case self::ERR_SERVICE_OFFLINE:
                 $constOrStatusCode = 503;
                 if (!empty($title))
                     $title = 'Invalid Resource';
-                if (!empty($description))
-                    $description = 'This service is temporarily offline. Try again later';
+                if (!empty($message))
+                    $message = 'This service is temporarily offline. Try again later';
                 break;
             case self::ERR_IM_A_TEAPOT:
                 $constOrStatusCode = 418;
             case 418: //I'm a teapot
                 if (!empty($title))
                     $title = 'I\'m a teapot';
-                if (!empty($description))
-                    $description = 'I\'m a little teapot,
+                if (!empty($message))
+                    $message = 'I\'m a little teapot,
                                     Short and stout,
                                     Here is my handle, (one hand on hip)
                                     Here is my spout, (other arm out with elbow and wrist bent)
@@ -93,26 +93,26 @@ class WebserviceErrorResponse extends WebserviceResponse
             case 429: //Too many requests
                 if (!empty($title))
                     $title = 'Too Many Requests';
-                if (!empty($description))
-                    $description = 'You have reached your request quota per client. Try again later.';
+                if (!empty($message))
+                    $message = 'You have reached your request quota per client. Try again later.';
                 break;
             case self::ERR_NOT_IMPLEMENTED: 
                 $constOrStatusCode = 501;
             case 501: // Not Implemented
                 if (!empty($title))
                     $title = 'Not Implemented';
-                if (!empty($description))
-                    $description = 'Ther service/method you were trying to reach is not implemented here.';
+                if (!empty($message))
+                    $message = 'Ther service/method you were trying to reach is not implemented here.';
                 break;
             case self::ERR_OPERATION_FAILED: case 500: default: //Internal Server Error
                 $constOrStatusCode = 500;
                 if (!empty($title))
                     $title = 'Operation Failed';
-                if (!empty($description))
-                    $description = 'Something went wrong with the server.';
+                if (!empty($message))
+                    $message = 'Something went wrong with the server.';
                 break;
         }
-        return new WebserviceErrorResponse($constOrStatusCode,$resultType,$details, $title, $description);
+        return new WebserviceErrorResponse($constOrStatusCode,$resultType,$details, $title, $message);
     }
 
     const ERR_INVALID_RESOURCE = 0x12321;

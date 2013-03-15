@@ -60,14 +60,14 @@ abstract class WebserviceService
                 if (empty($result) || !($result instanceof WebserviceResponse))
                 {
                     $logger->logError("Unexpected result when processing the method '$requestMethod' of resource  '{$request->getResource()}'.");
-                    return WebserviceErrorResponse::getErrorResponse(WebserviceErrorResponse::ERR_OPERATION_FAILED, $request->getAcceptType(), null, 'The service returned an unexpected result.');
+                    return WebserviceErrorResponse::getErrorResponse(WebserviceErrorResponse::ERR_OPERATION_FAILED, $request->getAcceptType(), 'The service returned an unexpected result.');
                 }
                 return $result;
             } else
             {
 
                 $logger->logInfo("Call to invalid webservice method '$requestMethod' of resource '{$request->getResource()}'.");
-                return WebserviceErrorResponse::getErrorResponse(WebserviceErrorResponse::ERR_INVALID_METHOD, $request->getAcceptType(), null, 'Invalid resource method $requestMethod.');
+                return WebserviceErrorResponse::getErrorResponse(WebserviceErrorResponse::ERR_INVALID_METHOD, $request->getAcceptType(), 'Invalid resource method $requestMethod.');
             }
         } catch (Exception $ex)
         {

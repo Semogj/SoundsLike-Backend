@@ -36,7 +36,7 @@ abstract class Controller
         {
             $errorMsg = "Invalid service resource '$resource'. These aren't the droids you are looking for!";
             CoreVIRUS::logInfo("Invalid service request 'apiv1/$resource'");
-            $response = WebserviceErrorResponse::getErrorResponse(WebserviceErrorResponse::ERR_INVALID_RESOURCE, $request->getAcceptType(), null, $errorMsg, null);
+            $response = WebserviceErrorResponse::getErrorResponse(WebserviceErrorResponse::ERR_INVALID_RESOURCE, $request->getAcceptType(), $errorMsg);
         } else
         {
             CoreVIRUS::logDebug('Calling processRequest() of service class ' . get_class($request) . '.');
