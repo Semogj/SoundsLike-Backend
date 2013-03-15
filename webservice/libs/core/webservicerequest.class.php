@@ -265,8 +265,8 @@ class WebserviceRequest
      * 
      * The returned value is converted to a proper data type if possible.
      * @param string $key the key to obtain from a 
-     * @param string $default
-     * @return string|boolean|int|float
+     * @param mixed $default optional return value if the key is not found. Default is null.
+     * @return string|boolean|int|float|mixed
      */
     public function getPostParameter($key, $default = null)
     {

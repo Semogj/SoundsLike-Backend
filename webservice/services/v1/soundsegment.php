@@ -12,7 +12,7 @@ use VIRUS\webservice\WebserviceRequest;
 use VIRUS\webservice\WebserviceResponse;
 use VIRUS\webservice\WebserviceCollection;
 use VIRUS\webservice\models\VideoModel;
-use VIRUS\webservice\OkWebserviceResponse;
+use VIRUS\webservice\WebserviceOkResponse;
 use VIRUS\webservice\models\SoundSegmentModel;
 use VIRUS\webservice\models\SoundTagModel;
 
@@ -87,10 +87,10 @@ class SoundSegmentService extends WebserviceService
                 default:
                     $resultArr = SoundSegmentModel::getSingle($idSegment);
                     $resultResource = new WebserviceCollection($this->getServiceName(), $resultArr);
-                    $output = new OkWebserviceResponse($request->getAcceptType(), 200, array($resultResource));
+                    $output = new WebserviceOkResponse($request->getAcceptType(), 200, array($resultResource));
             }
         }
-        return new OkWebserviceResponse($request->getAcceptType(), HTML_200_OK, array($resultResource));;
+        return new WebserviceOkResponse($request->getAcceptType(), HTML_200_OK, array($resultResource));;
     }
 
     public function post(WebserviceRequest $request)

@@ -14,15 +14,6 @@ if (!defined("VIRUS"))
 
 class WebserviceResponse
 {
-
-    static $ERR_INVALID_RESOURCE = array('code' => 404, 'title' => 'Invalid Resource', 'description' => 'This resource does not exist');
-    static $ERR_INVALID_METHOD = array('code' => 405, 'title' => 'Invalid Method', 'description' => 'No method with that name in this package');
-    static $ERR_AUTHENTICATION_FAILED = array('code' => 511, 'error_title' => 'Authentication Failed', 'description' => 'You do not have permissions to access the service');
-    static $ERR_INVALID_FORMAT = array('code' => 400, 'title' => 'Invalid Format', 'error_description' => 'The service doesn\'t exist in that format');
-    static $ERR_INVALID_PARAMETERS = array('code' => 400, 'title' => 'Invalid Parameters', 'description' => 'Your request is missing a required parameter');
-    static $ERR_OPERATION_FAILED = array('code' => 500, 'title' => 'Operation Failed', 'description' => 'Something else went kaputs');
-    static $ERR_SERVICE_OFFLINE = array('code' => 503, 'title' => 'Service Offline', 'description' => 'This service is temporarily offline. Try again later');
-
     const HTML_200_OK = 200;
     const HTML_201_CREATED = 201;
     const HTML_202_ACCEPTED = 202;
@@ -37,7 +28,7 @@ class WebserviceResponse
     const HTML_502_SERVICE_UNAVAILABLE = 503;
     const HTML_511_NETWORK_AUTHENTICATION_REQUIRED = 511;
 
-    protected $outputResource;
+    private $outputResource;
 
     public function __construct($status = 200, $resultType = 'xml', array $outputArray = array())
     {
@@ -60,6 +51,12 @@ class WebserviceResponse
     {
         return $this->outputResource['resultType'];
     }
+    protected function setOutputArray(array $output){
+        $ret = $this->outputResource['output'];
+        $this->outputResource['output'] = $output;
+        return $ret;
+    }
+    
 
     const XML_LABEL_COUNT = 1;
     const XML_LABEL_PAGE = 2;

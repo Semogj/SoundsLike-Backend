@@ -21,7 +21,6 @@ if (!defined("VIRUS"))
 //ob_start();
 
 $response = $data->get('response', null);
-$logger = CoreVIRUS::getLogger();
 
 /**
  * @var WebserviceResponse $response
@@ -35,31 +34,28 @@ if (isset($response) && is_object($response) && $response instanceof WebserviceR
     $statusHttp = getStatusCode($status);
     \http_response_code($status);
 
-   
+
     $output = $response->getOutputArrayAsXML();
-    
+
     $output = '<' . RESPONSE_APP_NAME . " status=\"$status\" code=\"$statusHttp\">
                 $output
         </" . RESPONSE_APP_NAME . '>';
     if ($resultType == 'json')
     {
-         header('Content-type: application/json');
-         $output = \xml2json::transformXmlStringToJson($output);
-         $logger->logDebug("Response (httpCode=$statusHttp; type=$resultType): " . $output);
-         echo $output;
+        header('Content-type: application/json');
+        $output = \xml2json::transformXmlStringToJson($output);
     } else
     {
-         header('Content-type: text/xml, charset=utf-8');
-         $logger->logDebug("Response (httpCode=$statusHttp; type=$resultType): " . $output);
-         echo $output;
+        header('Content-type: text/xml, charset=utf-8');
     }
-//    $b=ob_get_contents();
-//    $logger->LogFatal(var_export($b, true));
-//    ob_end_flush();
+    CoreVIRUS::logDebug("Response (httpCode=$statusHttp; type=$resultType)");
+    CoreVIRUS::log(CoreVIRUS::LOG_DEBUG_VERBOSE, "Response output body: $output");
+    echo $output;
+
 } else
 {
-//    ob_end_flush();
-    $logger->logFatal('The $response parameter in apiv1result_view is not a valid output array.');
+    ob_end_flush();
+    CoreVIRUS::logFatal('The $response parameter in apiv1result_view is not a valid output array.');
     showErrorResponse(500, getStatusCode(500), "An unexpected error has happened while processing your request.", '', false);
 }
 

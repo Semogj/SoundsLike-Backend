@@ -21,12 +21,13 @@ if (!defined("VIRUS"))
 class CoreVIRUS
 {
 
-    const LOG_ALL = 0;
-    const LOG_DEBUG = 100; // Most Verbose
-    const LOG_INFO = 200; // ...
-    const LOG_WARNING = 300; // ...
-    const LOG_ERROR = 400; // ...
-    const LOG_FATAL = 500; // Least Verbose 
+    const LOG_DEBUG_VERBOSE = 100;
+    const LOG_DEBUG_DETAILED = 200;
+    const LOG_DEBUG = 300; // Most Verbose
+    const LOG_INFO = 400; // ...
+    const LOG_WARNING = 500; // ...
+    const LOG_ERROR = 600; // ...
+    const LOG_FATAL = 700; // Least Verbose 
 
     /**
      *
@@ -105,7 +106,7 @@ class CoreVIRUS
      */
     public static function log($level, $message, array $stacktrace = null)
     {
-        self::$logger->log($level, $line, $stacktrace ? $stacktrace : debug_backtrace());
+        self::$logger->log($level, $message, $stacktrace ? $stacktrace : debug_backtrace());
     }
     /**
      * Logs an entry to the log file without any prefix or sufix.
