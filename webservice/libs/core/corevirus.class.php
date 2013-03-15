@@ -372,14 +372,3 @@ class CoreVIRUS
     }
 
 }
-
-class LogLevel
-{
-
-    const DEBUG = 100; // Most Verbose
-    const INFO = 200; // ...
-    const WARN = 300; // ...
-    const ERROR = 400; // ...
-    const FATAL = 500; // Least Verbose 
-
-}
