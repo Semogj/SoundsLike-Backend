@@ -87,7 +87,7 @@ class SoundTagModel implements DatabaseModel
         }
         if ($confidence !== null)
         {
-            $fields['confidence'] = trim(intval($confidence, 10));
+            $fields['confidence'] = trim(floatval($confidence));
         }
         /**
          * Tagname can be an array! (multiple tags to be inserted)
