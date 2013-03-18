@@ -21,12 +21,13 @@ if (!defined("VIRUS"))
 class CoreVIRUS
 {
 
-    const LOG_ALL = 0;
-    const LOG_DEBUG = 100; // Most Verbose
-    const LOG_INFO = 200; // ...
-    const LOG_WARNING = 300; // ...
-    const LOG_ERROR = 400; // ...
-    const LOG_FATAL = 500; // Least Verbose 
+    const LOG_DEBUG_VERBOSE = 100;
+    const LOG_DEBUG_DETAILED = 200;
+    const LOG_DEBUG = 300; // Most Verbose
+    const LOG_INFO = 400; // ...
+    const LOG_WARNING = 500; // ...
+    const LOG_ERROR = 600; // ...
+    const LOG_FATAL = 700; // Least Verbose 
 
     /**
      *
@@ -105,7 +106,7 @@ class CoreVIRUS
      */
     public static function log($level, $message, array $stacktrace = null)
     {
-        self::$logger->log($level, $line, $stacktrace ? $stacktrace : debug_backtrace());
+        self::$logger->log($level, $message, $stacktrace ? $stacktrace : debug_backtrace());
     }
     /**
      * Logs an entry to the log file without any prefix or sufix.
@@ -113,7 +114,7 @@ class CoreVIRUS
      * @param string $rawMessage
      * @param boolean $includeTimeline true if you want to be prefixed with the default timeline.
      */
-    public static function rawLog($level, $rawMessage, $includeTimeline = false)
+    public static function logRaw($level, $rawMessage, $includeTimeline = false)
     {
         self::$logger->rawLog($level, $rawMessage, $includeTimeline);
     }
@@ -130,7 +131,7 @@ class CoreVIRUS
 
     public static function logWarning($line, array $stacktrace = null)
     {
-        self::$logger->log(self::LOG_WARN, $line, $stacktrace ? $stacktrace : debug_backtrace());
+        self::$logger->log(self::LOG_WARNING, $line, $stacktrace ? $stacktrace : debug_backtrace());
     }
 
     public static function logError($line, array $stacktrace = null)
@@ -370,16 +371,5 @@ class CoreVIRUS
     {
         return self::$controller;
     }
-
-}
-
-class LogLevel
-{
-
-    const DEBUG = 100; // Most Verbose
-    const INFO = 200; // ...
-    const WARN = 300; // ...
-    const ERROR = 400; // ...
-    const FATAL = 500; // Least Verbose 
 
 }

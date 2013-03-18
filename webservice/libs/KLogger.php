@@ -34,12 +34,14 @@ class KLogger
 {
 
     const ALL = 0; // Most Verbose
-    const DEBUG = 100; // ... 
-    const INFO = 200; // ...
-    const WARNING = 300; // ...
-    const ERROR = 400; // ...
-    const FATAL = 500; // Least Verbose
-    const OFF = 600; // Nothing at all.
+    const DEBUG_VERBOSE = 100;
+    const DEBUG_DETAILED = 200;
+    const DEBUG = 300; // ... 
+    const INFO = 400; // ...
+    const WARNING = 500; // ...
+    const ERROR = 600; // ...
+    const FATAL = 700; // Least Verbose
+    const OFF = 1000; // Nothing at all.
     const LOG_OPEN = 1;
     const OPEN_FAILED = 2;
     const LOG_CLOSED = 3;
@@ -198,20 +200,26 @@ class KLogger
         $time = date($this->DateFormat);
         switch ($level)
         {
-            case KLogger::INFO:
+            case self::INFO:
                 $level = 'INFO';
                 break;
-            case KLogger::WARNING:
+            case self::WARNING:
                 $level = 'WARNING';
                 break;
-            case KLogger::DEBUG:
+            case self::DEBUG:
                 $level = 'DEBUG';
                 break;
-            case KLogger::ERROR:
+            case self::ERROR:
                 $level = 'ERROR';
                 break;
-            case KLogger::FATAL:
+            case self::FATAL:
                 $level = 'FATAL';
+                break;
+            case self::DEBUG_VERBOSE:
+                $level = 'DEBUG-VERBOSE';
+                break;
+            case self::DEBUG_DETAILED:
+                $level = 'DEBUG-DETAILED';
                 break;
             default:
                 $level = 'LOG';

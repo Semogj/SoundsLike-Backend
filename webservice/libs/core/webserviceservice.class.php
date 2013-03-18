@@ -4,7 +4,7 @@ namespace VIRUS\webservice\services;
 
 use VIRUS\webservice\WebserviceRequest;
 use VIRUS\webservice\CoreVIRUS;
-use VIRUS\webservice\ErrorWebserviceResponse;
+use VIRUS\webservice\WebserviceErrorResponse;
 use VIRUS\webservice\WebserviceResponse;
 
 if (!defined("VIRUS"))
@@ -26,7 +26,7 @@ abstract class WebserviceService
      */
     protected $logger;
     private $serviceName;
-    
+
     /**
      * If you want to use a fixed name, just pass a string when overriding this constructor!
      * @param string $serviceName
@@ -37,8 +37,9 @@ abstract class WebserviceService
         $logger = CoreVIRUS::getLogger();
         $this->serviceName = $serviceName;
     }
-    
-    public function getServiceName(){
+
+    public function getServiceName()
+    {
         return $this->serviceName;
     }
 
@@ -59,20 +60,20 @@ abstract class WebserviceService
                 if (empty($result) || !($result instanceof WebserviceResponse))
                 {
                     $logger->logError("Unexpected result when processing the method '$requestMethod' of resource  '{$request->getResource()}'.");
-                    return new ErrorWebserviceResponse(WebserviceResponse::$ERR_OPERATION_FAILED, 'The service returned an unexpected result.');
+                    return WebserviceErrorResponse::getErrorResponse(WebserviceErrorResponse::ERR_OPERATION_FAILED, $request->getAcceptType(), 'The service returned an unexpected result.');
                 }
                 return $result;
             } else
             {
 
                 $logger->logInfo("Call to invalid webservice method '$requestMethod' of resource '{$request->getResource()}'.");
-                return new ErrorWebserviceResponse(WebserviceResponse::$ERR_INVALID_METHOD, "Invalid resource method $requestMethod.");
+                return WebserviceErrorResponse::getErrorResponse(WebserviceErrorResponse::ERR_INVALID_METHOD, $request->getAcceptType(), 'Invalid resource method $requestMethod.');
             }
         } catch (Exception $ex)
         {
             $logger->logError("Exception raised when processing the method '$requestMethod' of resource '{$request->getResource()}'.
                     Exception message: {$ex->getMessage()} at line {$ex->getLine()} of file {$ex->getFile()}.");
-            return new ErrorWebserviceResponse(WebserviceResponse::$ERR_OPERATION_FAILED, 'The service went kaputs while processing your request...');
+            return WebserviceErrorResponse::getErrorResponse(WebserviceErrorResponse::ERR_OPERATION_FAILED, $request->getAcceptType());
         }
     }
 

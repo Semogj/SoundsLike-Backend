@@ -1,9 +1,11 @@
 <?php
+
 namespace VIRUS\webservice\controllers;
+
 use VIRUS\webservice\CoreVIRUS;
 use VIRUS\webservice\WebserviceRequest;
 use VIRUS\webservice\WebserviceResponse;
-use VIRUS\webservice\ErrorWebserviceResponse;
+use VIRUS\webservice\WebserviceErrorResponse;
 
 if (!defined("VIRUS"))
 {//prevent script direct access
@@ -17,39 +19,22 @@ if (!defined("VIRUS"))
 
 class Apiv1 extends Controller
 {
+
     public function __construct()
     {
-        
-    }
-    public function _remap($resource, array $params = array())
-    {
-        $request = new WebserviceRequest($resource, $params);
-        CoreVIRUS::logDebug("Request: {$request->getDebugString()}.");
-        CoreVIRUS::logDebug('Segments ' . print_r($request->getSegments(),true) . '.');
-        $response = null;
-        $service = CoreVIRUS::loadService($resource);
-        if(!$service)
-        {
-            $errorMsg = "These aren't the droids you are looking for! Invalid service resource '$resource'.";
-            CoreVIRUS::logInfo("Invalid service request 'apiv1/$resource'");
-            $response = new ErrorWebserviceResponse(WebserviceResponse::$ERR_INVALID_RESOURCE, $errorMsg, array(), $request->getAcceptType());
-            
-        } else
-        {
-            CoreVIRUS::logDebug('Calling processRequest() of service class ' . get_class($request) . '.');
-            $response = $service->processRequest($request);
-        }
-        ob_start();
-        CoreVIRUS::loadView('webservice/webservice', array('response' => $response, 'logger' => CoreVIRUS::getLogger()) );
-        ob_end_flush();
+        parent::__construct();
     }
 
-    public function _default()
+    public function _remap($resource, array $segments = array())
     {
-        
+        parent::_remap($resource, $segments);
     }
 
-    
+    public function _beforeResponse(WebserviceResponse $response)
+    {
+        parent::_beforeResponse($response);
+    }
+
 
 }
 

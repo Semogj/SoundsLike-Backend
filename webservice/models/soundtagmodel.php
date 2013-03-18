@@ -49,7 +49,16 @@ class SoundTagModel implements DatabaseModel
         return $result ? $result->fetchAll(PDO::FETCH_ASSOC) : array();
     }
 
-    public static function createEntry($userId, $soundSegmentId = null, $tagName = null, $type = NULL)
+    /**
+     * 
+     * @param int $userId
+     * @param int $soundSegmentId
+     * @param array|string $tagName
+     * @param string $type
+     * @param float $confidence
+     * @return boolean
+     */
+    public static function createEntry($userId, $soundSegmentId = null, $tagName = null, $type = NULL, $confidence = null)
     {
         $logger = CoreVIRUS::getLogger();
         $fields = array();
@@ -58,46 +67,88 @@ class SoundTagModel implements DatabaseModel
         if (count(UserModel::getSingle($userId)) === 0)
         {
 
-            $logger->logWarning("Invalid userId '$userId' in SoundTagModel::createEntry(), file " . __FILE__ . ' line ' . __LINE__ . '.');
+            $logger->logError("Invalid userId '$userId' in SoundTagModel::createEntry()");
             return false;
         }
         $fields['userId'] = $userId;
         $soundSegmentId = intval($soundSegmentId, 10);
         //check if soundSegmentId is valid (exists in the database)
-        if (count(UserModel::getSingle($soundSegmentId)) === 0)
+        if (count(SoundSegmentModel::getSingle($soundSegmentId)) === 0)
         {
-            $logger->logWarning("Invalid soundSegmentId '$soundSegmentId' in SoundTagModel::createEntry(), file " . __FILE__ . ' line ' . __LINE__ . '.');
+            $logger->logError("Invalid soundSegmentId '$soundSegmentId' in SoundTagModel::createEntry()");
             return false;
         }
         $fields['soundSegmentId'] = $soundSegmentId;
 
-        if (empty($tagName))
-        {
-            $logger->logWarning("The tagname cannot be empty, in SoundTagModel::createEntry(), file " . __FILE__ . ' line ' . __LINE__ . '.');
-            return false;
-        }
-        $fields['tagName'] = trim($tagName);
 
         if (!empty($type))
         {
             $fields['type'] = trim($type);
         }
+        if ($confidence !== null)
+        {
+            $fields['confidence'] = trim(floatval($confidence));
+        }
+        /**
+         * Tagname can be an array! (multiple tags to be inserted)
+         */
+        if (empty($tagName))
+        {
+            $logger->logError("The tagname cannot be empty, in SoundTagModel::createEntry()");
+            return false;
+        }
+        $values = array();
+        if (is_array($tagName))
+        {
+            if (empty($tagName))
+            {
+                $logger->logError("Empty tag array detected, in SoundTagModel::createEntry()");
+                return false;
+            }
+            $tagName = array_unique($tagName, SORT_STRING);
 
+            while (list(, $tag) = each($tagName))
+            {
+                if (empty($tag))
+                {
+                    $logger->logError("Empty tag array value detected, the tagname cannot be empty, in SoundTagModel::createEntry()");
+                    return false;
+                }
+
+                $values[] = $fields + array('tagName' => $tag);
+                
+            }
+        } else
+        {
+            $fields['tagName'] = trim($tagName);
+            $values[] = $fields;
+        }
+        $fields['tagName'] = ''; // we need the key for the query
         $db = CoreVIRUS::getDb();
-        //insert into user
-        $query = 'INSERT INTO SoundTag (' . implode(', ', array_keys($fields)) . ') VALUES (' . $x(count($fields)) . ')';
+
+        $query = 'INSERT IGNORE INTO SoundTag (' . implode(', ', array_keys($fields)) . ') VALUES ';
+        $stmValuesArr = array();
+        $tmpArr = array(); //just to implode it inside $query
+        while (list (, $arr) = each($values))
+        {
+            $tmpArr[] = '(' . str_repeat_implode('?', ',', count($arr)) . ')';
+            $stmValuesArr += array_push_values($stmValuesArr, $arr); //array union
+        }
+        $query .= implode(',', $tmpArr);
+//        die(print_r($query, true));
         $statement = $db->prepare($query);
-        $statement->execute(array_values($fields));
+        $statement->execute($stmValuesArr);
         if ($statement->rowCount() > 0)
         {
             $insertedId = $db->lastInsertId();
-            $logger->logWarning("A new soundtag has been inserted successfully on the database with id $insertedId'" .
-                    ' SoundTagModel::createEntry(), file ' . __FILE__ . ' line ' . __LINE__ . '.');
+            $logger->logInfo("A new soundtag has been inserted successfully on the database with id $insertedId'" .
+                    ' SoundTagModel::createEntry()');
             return $insertedId;
         } else
         {
-            $logger->logError("Database error while inserting a new soundTag. The soundTag may already exist! " .
-                    'On SoundTagModel::createEntry(),  file ' . __FILE__ . ' line ' . __LINE__ . '.');
+            //other errors are reported as PDO exception and are handled by the framework!
+            $logger->logWarning("Database error while inserting a new soundTag. The soundTag may already exist! " .
+                    'On SoundTagModel::createEntry()');
         }
         return false;
     }

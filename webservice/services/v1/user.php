@@ -12,7 +12,7 @@ use VIRUS\webservice\WebserviceRequest;
 use VIRUS\webservice\WebserviceResponse;
 use VIRUS\webservice\WebserviceCollection;
 use VIRUS\webservice\models\UserModel;
-use VIRUS\webservice\OkWebserviceResponse;
+use VIRUS\webservice\WebserviceOkResponse;
 use VIRUS\webservice\models\SoundSegmentModel;
 use VIRUS\webservice\models\SoundTagModel;
 
@@ -70,7 +70,7 @@ class UserService extends WebserviceService
                     $output = new WebserviceCollection($this->getServiceName(), $resultArr);
             }
         }
-        return new OkWebserviceResponse($request->getAcceptType(), 200, array($output));
+        return new WebserviceOkResponse($request->getAcceptType(), 200, array($output));
     }
 
     public function post(WebserviceRequest $request)

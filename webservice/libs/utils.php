@@ -39,9 +39,7 @@ function getArrayAsXML(array $theArray, $previousKey = null)
                 {
                     $sufix .= " totalPages=\"$value->totalPages\"";
                 }
-                $valueTmp = is_array($value->resulArray) ? getArrayAsXML($value->resulArray, $value->resourceTag) : $value = htmlspecialchars($value->resulArray,
-                                                                                                                                              null,
-                                                                                                                                              'UTF-8');
+                $valueTmp = is_array($value->resulArray) ? getArrayAsXML($value->resulArray, $value->resourceTag) : $value = htmlspecialchars($value->resulArray, null, 'UTF-8');
                 $key = plural($key);
                 $result .= "<{$key}{$sufix}>$valueTmp</$key>";
             } elseif (is_array($value))
@@ -628,8 +626,7 @@ function is_valid_url($theString)
 (\?[a-z0-9\-._~%!$&\'()*+,;=:@\/?]*)?
 # Fragment
 (\#[a-z0-9\-._~%!$&\'()*+,;=:@\/?]*)?
-$/ix',
-            $theString);
+$/ix', $theString);
 }
 
 if (!function_exists('singular'))
@@ -651,33 +648,33 @@ if (!function_exists('singular'))
         $result = strval($str);
 
         $singular_rules = array(
-            '/(matr)ices$/'                                                   => '\1ix',
-            '/(vert|ind)ices$/'                                               => '\1ex',
-            '/^(ox)en/'                                                       => '\1',
-            '/(alias)es$/'                                                    => '\1',
-            '/([octop|vir])i$/'                                               => '\1us',
-            '/(cris|ax|test)es$/'                                             => '\1is',
-            '/(shoe)s$/'                                                      => '\1',
-            '/(o)es$/'                                                        => '\1',
-            '/(bus|campus)es$/'                                               => '\1',
-            '/([m|l])ice$/'                                                   => '\1ouse',
-            '/(x|ch|ss|sh)es$/'                                               => '\1',
-            '/(m)ovies$/'                                                     => '\1\2ovie',
-            '/(s)eries$/'                                                     => '\1\2eries',
-            '/([^aeiouy]|qu)ies$/'                                            => '\1y',
-            '/([lr])ves$/'                                                    => '\1f',
-            '/(tive)s$/'                                                      => '\1',
-            '/(hive)s$/'                                                      => '\1',
-            '/([^f])ves$/'                                                    => '\1fe',
-            '/(^analy)ses$/'                                                  => '\1sis',
+            '/(matr)ices$/' => '\1ix',
+            '/(vert|ind)ices$/' => '\1ex',
+            '/^(ox)en/' => '\1',
+            '/(alias)es$/' => '\1',
+            '/([octop|vir])i$/' => '\1us',
+            '/(cris|ax|test)es$/' => '\1is',
+            '/(shoe)s$/' => '\1',
+            '/(o)es$/' => '\1',
+            '/(bus|campus)es$/' => '\1',
+            '/([m|l])ice$/' => '\1ouse',
+            '/(x|ch|ss|sh)es$/' => '\1',
+            '/(m)ovies$/' => '\1\2ovie',
+            '/(s)eries$/' => '\1\2eries',
+            '/([^aeiouy]|qu)ies$/' => '\1y',
+            '/([lr])ves$/' => '\1f',
+            '/(tive)s$/' => '\1',
+            '/(hive)s$/' => '\1',
+            '/([^f])ves$/' => '\1fe',
+            '/(^analy)ses$/' => '\1sis',
             '/((a)naly|(b)a|(d)iagno|(p)arenthe|(p)rogno|(s)ynop|(t)he)ses$/' => '\1\2sis',
-            '/([ti])a$/'                                                      => '\1um',
-            '/(p)eople$/'                                                     => '\1\2erson',
-            '/(m)en$/'                                                        => '\1an',
-            '/(s)tatuses$/'                                                   => '\1\2tatus',
-            '/(c)hildren$/'                                                   => '\1\2hild',
-            '/(n)ews$/'                                                       => '\1\2ews',
-            '/([^u])s$/'                                                      => '\1',
+            '/([ti])a$/' => '\1um',
+            '/(p)eople$/' => '\1\2erson',
+            '/(m)en$/' => '\1an',
+            '/(s)tatuses$/' => '\1\2tatus',
+            '/(c)hildren$/' => '\1\2hild',
+            '/(n)ews$/' => '\1\2ews',
+            '/([^u])s$/' => '\1',
         );
 
         foreach ($singular_rules as $rule => $replacement)
@@ -715,25 +712,25 @@ if (!function_exists('plural'))
         $result = strval($str);
 
         $plural_rules = array(
-            '/^(ox)$/'                => '\1\2en', // ox
-            '/([m|l])ouse$/'          => '\1ice', // mouse, louse
+            '/^(ox)$/' => '\1\2en', // ox
+            '/([m|l])ouse$/' => '\1ice', // mouse, louse
             '/(matr|vert|ind)ix|ex$/' => '\1ices', // matrix, vertex, index
-            '/(x|ch|ss|sh)$/'         => '\1es', // search, switch, fix, box, process, address
-            '/([^aeiouy]|qu)y$/'      => '\1ies', // query, ability, agency
-            '/(hive)$/'               => '\1s', // archive, hive
+            '/(x|ch|ss|sh)$/' => '\1es', // search, switch, fix, box, process, address
+            '/([^aeiouy]|qu)y$/' => '\1ies', // query, ability, agency
+            '/(hive)$/' => '\1s', // archive, hive
             '/(?:([^f])fe|([lr])f)$/' => '\1\2ves', // half, safe, wife
-            '/sis$/'                  => 'ses', // basis, diagnosis
-            '/([ti])um$/'             => '\1a', // datum, medium
-            '/(p)erson$/'             => '\1eople', // person, salesperson
-            '/(m)an$/'                => '\1en', // man, woman, spokesman
-            '/(c)hild$/'              => '\1hildren', // child
-            '/(buffal|tomat)o$/'      => '\1\2oes', // buffalo, tomato
-            '/(bu|campu)s$/'          => '\1\2ses', // bus, campus
-            '/(alias|status|virus)/'  => '\1es', // alias
-            '/(octop)us$/'            => '\1i', // octopus
-            '/(ax|cris|test)is$/'     => '\1es', // axis, crisis
-            '/s$/'                    => 's', // no change (compatibility)
-            '/$/'                     => 's',
+            '/sis$/' => 'ses', // basis, diagnosis
+            '/([ti])um$/' => '\1a', // datum, medium
+            '/(p)erson$/' => '\1eople', // person, salesperson
+            '/(m)an$/' => '\1en', // man, woman, spokesman
+            '/(c)hild$/' => '\1hildren', // child
+            '/(buffal|tomat)o$/' => '\1\2oes', // buffalo, tomato
+            '/(bu|campu)s$/' => '\1\2ses', // bus, campus
+            '/(alias|status|virus)/' => '\1es', // alias
+            '/(octop)us$/' => '\1i', // octopus
+            '/(ax|cris|test)is$/' => '\1es', // axis, crisis
+            '/s$/' => 's', // no change (compatibility)
+            '/$/' => 's',
         );
 
         foreach ($plural_rules as $rule => $replacement)
@@ -813,3 +810,51 @@ function convert_type($var)
 
     return $var;
 }
+
+/**
+ * Verifies if there are empty values in a array.
+ * All values in the array are evaluated agains the empty() PHP function.
+ * Returns true if the array is empty, null or have empty values .
+ * @param array $array
+ * @return boolean
+ */
+function array_values_empty($array)
+{
+    if (empty($array))
+        return true;
+    $str = '';
+    while (list($key, $value) = each($array))
+    {
+        if (empty($value))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+function array_push_values(array $arr, array $values)
+{
+    while (list(, $val) = each($values))
+    {
+        $arr[] = $val;
+    }
+    return $arr;
+}
+
+/**
+ * Similar behaviour to implode($delimiter,$array), where $array is composed of $nTimes $string values
+ *  (ie $array = array($string,$string,$string, ......, $string)). 
+ * 
+ * If $nTimes is 0, negative or invalid, an empty string is returned.
+ * @param string $string the string to repeat
+ * @param string $delimiter the glue string to separate each repetition
+ * @param int $nTimes number of times to repeat.
+ * @return string
+ */
+function str_repeat_implode($string, $delimiter, $nTimes)
+{ //For making "?,?,?,?", depending on the number of available fields to insert
+    $nTimes = intval($nTimes, 10);
+    return $nTimes <= 0 ? '' : $string . str_repeat("{$delimiter}{$string}", $nTimes - 1);
+}
+

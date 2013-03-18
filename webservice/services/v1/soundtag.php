@@ -13,8 +13,9 @@ use VIRUS\webservice\WebserviceResponse;
 use VIRUS\webservice\WebserviceCollection;
 use VIRUS\webservice\models\UserModel;
 use VIRUS\webservice\models\SoundTagModel;
-use VIRUS\webservice\OkWebserviceResponse;
+use VIRUS\webservice\WebserviceOkResponse;
 use VIRUS\webservice\models\SoundSegmentModel;
+use VIRUS\webservice\WebserviceErrorResponse;
 
 class SoundTagService extends WebserviceService
 {
@@ -66,12 +67,12 @@ class SoundTagService extends WebserviceService
                     if ($idAudioSegment === false)
                     {
                         $resultArr = SoundSegmentModel::getFiltered(SoundSegmentModel::filter()->byVideoId($idVideoSegment), $limit, $offsetPage);
-                        $output = new WebserviceCollection('soundsegment', $resultArr, null, $limit, $offsetPage);                    
+                        $output = new WebserviceCollection('soundsegment', $resultArr, null, $limit, $offsetPage);
                     } else
                     {//we have a id segment
                         switch ($request->getRawSegment(4, null))
                         {
-                            case 'similar': 
+                            case 'similar':
                                 $resultArr = SoundSegmentModel::getMostSimilarInVideo($idAudioSegment, $idVideoSegment, $limit, $offsetPage);
                                 $output = new WebserviceCollection('soundsegment', $resultArr, null, $limit, $offsetPage);
                                 break;
@@ -86,11 +87,68 @@ class SoundTagService extends WebserviceService
                     $output = new WebserviceCollection($this->getServiceName(), $resultArr);
             }
         }
-        return new OkWebserviceResponse($request->getAcceptType(), 200, array($output));
+        return new WebserviceOkResponse($request->getAcceptType(), 200, array($output));
     }
 
     public function post(WebserviceRequest $request)
     {
+        $userId = intval($request->getPostParameter('uid'), 10);
+        $segmentId = intval($request->getPostParameter('sid'), 10);
+        $tagName = $request->getPostParameter('tags');
+        $type = $request->getPostParameter('type');
+        $confidence = $request->getPostParameter('confidence');
+
+        $errorArr = array();
+
+        
+        if ($userId <= 0)
+        {
+            $errorArr[] = 'Invalid user Id.';
+        } else
+        {
+            $user = UserModel::getSingle($userId);
+            if (empty($user))
+            {
+                $errorArr[] = 'The specified user id does not exist.';
+            }
+        }
+        if ($segmentId <= 0)
+        {
+            $errorArr[] = 'Invalid sound segment Id.';
+        } else
+        {
+            
+            $segment = SoundSegmentModel::getSingle($segmentId);
+            if (empty($segment))
+            {
+                $errorArr[] = 'The specified sound segment id does not exist.';
+            }
+        }
+        //is a valid tag string (only a-z A-Z, spaces and commas (,) are accepted)
+        
+        if (preg_match("/[\w\,\s]+/i", $tagName))
+        {
+            $tagName = preg_split("/\,/", $tagName);
+            if (array_values_empty($tagName))
+            {
+                $errorArr[] = 'The tagName parameter is invalid. Please verify if tags only use alphabeth letters (a-z A-Z) spaces and commas for separating multiple tags.';
+            }else{
+                $tagName = array_map('trim',$tagName);
+            }
+        } else
+        {
+            $errorArr[] = 'The tagName parameter is invalid. Please verify if tags only use alphabeth letters (a-z A-Z) spaces and commas for separating multiple tags.';
+        }
+        if(!empty($errorArr)){
+            return WebserviceErrorResponse::getErrorResponse(WebserviceErrorResponse::ERR_INVALID_FORMAT, $request->getAcceptType(), null, $errorArr);
+        }else{
+            $result = SoundTagModel::createEntry($userId, $segmentId, $tagName, $type, $confidence);
+            if(!$result){
+                return WebserviceErrorResponse::getErrorResponse(WebserviceErrorResponse::ERR_CONFLICT, $request->getAcceptType());
+            }else{
+                return new WebserviceOkResponse($request->getAcceptType(),HTML_201_CREATED,array('insertId' => $result));
+            }
+        }
         
     }
 
