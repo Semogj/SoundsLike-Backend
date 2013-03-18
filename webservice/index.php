@@ -9,6 +9,9 @@ namespace VIRUS\webservice;
  *  - Limitation of logger entries
  *  - File loggers organization
  *  - Services alias
+ *  - Verify if can handle the accepted type of HTTP request
+ *  - API keys (utilities & support)
+ *  - API authentication utilities (auth tokens)
  */
 $config = array(
     'dbDriver' => 'mysql',
@@ -18,13 +21,19 @@ $config = array(
     'dbName' => 'virus_as',
     'logFile' => 'logs/logFile.txt',
     'debug' => true, //for error_reporting();  WARNING: use false in a production environment!
-    'loglevel' => 0, //for log file: ALL = 0, DEBUG = 100, INFO = 200, WARNING = 300, ERROR = 400, FATAL = 500
+    //for log file: (most verbose)| ALL=0 -- 1 -- 2 -- DEBUG=3 -- INFO=2 -- WARNING=3 -- ERROR=4 -- FATAL=5  -- OFF=10 |(less verbose)
+    'loglevel' => 3,
+    //for error reporting. This will only affect errors that cannot be processed by the custom error handler;
     'defaultTimezone' => 'Europe/Lisbon'
 );
 
 //constant to prevent direct script access
 define('VIRUS', 1);
-define('VERSION', '0.9');
+define('VERSION', '0.9.1');
+
+
+//in case of fatal error, this will be the default http response code
+\http_response_code(500);
 
 require_once 'libs/core.php';
 
@@ -76,7 +85,7 @@ const SERVICES_FOLTER = 'services/';
 const SERVICES_NAMESPACE = 'VIRUS\\webservice\\services';
 const VIEWS_FOLDER = 'views/';
 
-define('LOG_LEVEL', $config['loglevel']);
+define('LOG_LEVEL', $config['loglevel'] * 100);
 define('ROOT_DIRECTORY', dirname(__FILE__) . '/');
 // The name of THIS file
 
@@ -121,8 +130,7 @@ if ($logger->Log_Status != \KLogger::LOG_OPEN)
     showErrorResponse(HTML_500_INTERNAL_SERVER_ERROR, 'Internal Server Error', 'Shit just happened!', "Unable to open log file!");
 }
 CoreVIRUS::setLogger($logger);
-
-CoreVIRUS::rawLog(CoreVIRUS::LOG_DEBUG, '#----- Core files and Logger loaded. -----#', true);
+CoreVIRUS::logRaw(CoreVIRUS::LOG_DEBUG, '#----- Core files and Logger loaded (level = ' . LOG_LEVEL . '). -----#', true);
 
 if (version_compare(PHP_VERSION, MINIMUM_PHP_VERSION, '<='))
 {
