@@ -211,7 +211,7 @@ class xml2json
             }
         } // End of if ($recursionDepth == 0) {		
 
-        if (@get_class($simpleXmlElementObject) == self::SIMPLE_XML_ELEMENT_PHP_CLASS)
+        if (is_object($simpleXmlElementObject) && get_class($simpleXmlElementObject) == self::SIMPLE_XML_ELEMENT_PHP_CLASS)
         {
             // Get a copy of the simpleXmlElementObject
             $copyOfsimpleXmlElementObject = $simpleXmlElementObject;
