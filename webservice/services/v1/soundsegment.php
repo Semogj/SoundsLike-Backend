@@ -67,9 +67,12 @@ class SoundSegmentService extends WebserviceService
             {
                 case 'similar':
                     $resultArr = SoundSegmentModel::getMostSimilar($idSegment, $limit, $offsetPage); //fetch result
-//                    $total = null; //fetch total here
                     $resultResource = new WebserviceCollection($this->getServiceName(), $resultArr);
-                    
+                    break;
+                case 'similarsoundtag' : case 'similarsoundtags': case 'similartag': case 'similartags':
+                    $similarLimit = $request->getSegmentAsInt('similarLimit',10);  
+                    $resultArr = SoundSegmentModel::getTagsOfMostSimilar($idSegment, $similarLimit, $limit, $offsetPage); //fetch result
+                    $resultResource = new WebserviceCollection('soundtag', $resultArr);
                     break;
                 case 'soundtags': case 'soundtag': case 'tag': case 'tags':
                     switch ($request->getSegment(3, null))

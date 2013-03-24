@@ -22,7 +22,6 @@ class SoundSegmentModel implements DatabaseModel
     const FIELD_VIDEO_TITLE = 'title';
     //view similarities (merges soundSimilarities and soundsegment tables)
     const VIEW_SIM = 'SoundSegmentSimilarities';
-    
 
     private static $filter;
 
@@ -72,6 +71,35 @@ class SoundSegmentModel implements DatabaseModel
         $statement = $db->prepare($sql);
         if (!$statement->execute($filter->getVarArray()))
             return false;
+        return $statement->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public static function getVideoSegmentsWithUserTagCount($videoId, $userId, $limit = API_DEFAULT_RESULT_LIMIT, $offsetPage = API_DEFAULT_RESULT_PAGE)
+    {
+        $limit = validate_pos_int($limit, API_DEFAULT_RESULT_LIMIT);
+        $offsetPage = (validate_pos_int($offsetPage, API_DEFAULT_RESULT_PAGE) - 1) * $limit; //offset
+        $sql = 'SELECT idSoundSegment, start, end, videoId, IFNULL(tagCount,0) as tagCount
+                FROM SoundSegment
+                LEFT JOIN (SELECT  soundSegmentId, userId, count(idSoundTag) as tagCount
+                        FROM SoundTag
+                        WHERE userId = :uid
+                        GROUP BY soundSegmentId) as TagCount
+                ON TagCount.soundSegmentId = SoundSegment.idSoundSegment
+                WHERE videoId = :vid
+                ORDER BY start ASC
+                LIMIT :offset, :limit';
+        $db = CoreVIRUS::getDb();
+        $statement = $db->prepare($sql);
+        $statement->bindValue(':uid', $userId, PDO::PARAM_INT);
+        $statement->bindValue(':vid', $videoId, PDO::PARAM_INT);
+        $statement->bindValue(':offset', $offsetPage, PDO::PARAM_INT);
+        $statement->bindValue(':limit', $limit, PDO::PARAM_INT);
+        if (!$statement->execute())
+        {
+            CoreVIRUS::getLogger()->logError('Unknown database error while executing the statement' .
+                    ',in SoundSegmentModel::getVideoSegmentsWithUserTagCount().');
+            return array();
+        }
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
 
@@ -136,11 +164,12 @@ class SoundSegmentModel implements DatabaseModel
         $statement->bindValue(':limit', $limit, PDO::PARAM_INT);
         $statement->bindValue(':id', $segmentId);
         $statement->bindValue(':vidid', $videoId);
-        
+
         if (!$statement->execute())
             return array();
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
+
     public static function getMostSimilar($segmentId, $limit = API_DEFAULT_RESULT_LIMIT, $offsetPage = API_DEFAULT_RESULT_PAGE)
     {
         $limit = validate_pos_int($limit, API_DEFAULT_RESULT_LIMIT);
@@ -153,13 +182,74 @@ class SoundSegmentModel implements DatabaseModel
                 WHERE id1 = :id OR id2 = :id
                 ORDER BY value ASC
                 LIMIT :offset, :limit';
-        
+
         $statement = $db->prepare($sql);
         $statement->bindValue(':offset', $offsetPage, PDO::PARAM_INT);
         $statement->bindValue(':limit', $limit, PDO::PARAM_INT);
         $statement->bindValue(':id', $segmentId, PDO::PARAM_INT);
 
         return $statement->execute() ? $statement->fetchAll(PDO::FETCH_ASSOC) : array();
+    }
+
+    public static function getTagsOfMostSimilar($segmentId, $similarLimit = 10, $limit = API_DEFAULT_RESULT_LIMIT, $offsetPage = API_DEFAULT_RESULT_PAGE)
+    {
+
+        function mergeTags($tArray1, $tArray2)
+        {
+            $a1Len = count($tArray1);
+//            $a2Len = count($tArray1);
+            $i = 0;
+            $changed = false;
+            foreach ($tArray2 as $tag2)
+            {
+                $changed = false;
+                for ($i = 0; $i < $a1Len; $i++)
+                {
+                    if ($tArray1[$i]['tagName'] == $tag2['tagName'])
+                    {
+                        $tArray1[$i]['weight']++;
+                        $changed = true;
+                        break;
+                    }
+                }
+                if (!$changed)
+                {
+                    $tArray1[] = array('tagName' => $tag2['tagName'], 'weight' => intval($tag2['weight'], 10));
+                }
+            }
+            return $tArray1;
+        }
+
+        $similarArr = self::getMostSimilar($segmentId, $similarLimit);
+        CoreVIRUS::logDebug('>Similar count = ' . count($similarArr));
+        if (empty($similarArr))
+        {
+            return array();
+        }
+        $tags = array();
+        $sid = null;
+        while (list(, $row) = each($similarArr))
+        {
+            $sid = $row['id1'] == $segmentId ? $row['id2'] : $row['id1'];
+            $sTags = SoundTagModel::getAudioSegmentWeightedTags($sid);
+//            CoreVIRUS::logDebug(">Before mergeTags of sid=$segmentId stags = " . print_r($sTags,true) ); 
+            $tags = mergeTags($tags, $sTags);
+//            CoreVIRUS::logDebug(">After mergeTags tags = " . print_r($tags,true) ); 
+        }
+        if (empty($tags))
+            return array();
+        //sort tags by weight
+        uasort($tags, function($a, $b) {
+                    $a = intval($a['weight'], 10);
+                    $b = intval($b['weight'], 10);
+                    return ($a < $b) ? 1 : (($a == $b) ? 0 : -1);
+                });
+        $offsetPage = intval($offsetPage, 10);
+        if ($offsetPage > 0)
+        {
+            $offsetPage--;
+        }
+        return array_slice($tags, $offsetPage, $limit);
     }
 
     public static function getSingle($id)
@@ -323,7 +413,5 @@ class SoundSegmentFilter extends ModelFilter
         $this->appendQuery(self::FIELD_VIDEO_ID, $videoId, '=');
         return $this;
     }
-    
-    
 
 }

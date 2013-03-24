@@ -65,12 +65,19 @@ class VideoService extends WebserviceService
                     $idAudioSegment = $request->getRawSegmentAsInt(3, false);
                     if ($idAudioSegment === false)
                     {
-                        $resultArr = SoundSegmentModel::getFiltered(SoundSegmentModel::filter()->byVideoId($idVideoSegment), $limit, $offsetPage);
+                        $userId = $request->getSegmentAsPositiveInt("user", false);
+                        if ($userId)
+                        {
+                            $resultArr = SoundSegmentModel::getVideoSegmentsWithUserTagCount($idVideoSegment, $userId, $limit, $offsetPage);
+                        } else
+                        {
+                            $resultArr = SoundSegmentModel::getFiltered(SoundSegmentModel::filter()->byVideoId($idVideoSegment), $limit, $offsetPage);
+                        }
                         $output = new WebserviceCollection('soundsegment', $resultArr, null, $limit, $offsetPage);
                     } else
                     {//we have a soundSegment id url-segment
                         switch ($request->getRawSegment(4, null))
-                        { 
+                        {
                             case 'similar':
                                 $resultArr = SoundSegmentModel::getMostSimilarInVideo($idAudioSegment, $idVideoSegment, $limit, $offsetPage);
                                 $output = new WebserviceCollection('soundsegment', $resultArr, null, $limit, $offsetPage);
@@ -87,7 +94,7 @@ class VideoService extends WebserviceService
                                     default:
                                         CoreVIRUS::logDebug("idAudioSegment = " . $idAudioSegment);
                                         $resultArr = SoundTagModel::getAudioSegmentWeightedTags($idAudioSegment, $limit, $offsetPage); //fetch result
-                                        CoreVIRUS::logDebug(print_r($resultArr,true));
+                                        CoreVIRUS::logDebug(print_r($resultArr, true));
                                         $output = new WebserviceCollection('soundtag', $resultArr);
                                 }
                                 break;
