@@ -114,8 +114,7 @@ function includeSafe($filename)
 
 //Register an autoloader. Now we are able to load and use namespaced classes without the need of importing them.
 CoreVIRUS::registerAutoloader();
-//Register the error handler
-CoreVIRUS::registerErrorHandler();
+
 
 function showErrorResponse($httpStatus, $title, $msg, $debug = '', $die = true)
 {
@@ -130,6 +129,9 @@ if ($logger->Log_Status != \KLogger::LOG_OPEN)
     showErrorResponse(HTML_500_INTERNAL_SERVER_ERROR, 'Internal Server Error', 'Shit just happened!', "Unable to open log file!");
 }
 CoreVIRUS::setLogger($logger);
+//Register the error handler
+CoreVIRUS::registerErrorHandler();
+
 CoreVIRUS::logRaw(CoreVIRUS::LOG_DEBUG, '#----- Core files and Logger loaded (level = ' . LOG_LEVEL . '). -----#', true);
 
 if (version_compare(PHP_VERSION, MINIMUM_PHP_VERSION, '<='))

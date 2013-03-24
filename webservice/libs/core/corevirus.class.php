@@ -215,7 +215,6 @@ class CoreVIRUS
     {
         set_error_handler(
                 function ($errno, $errstr, $errfile, $errline) {
-
                     switch ($errno)
                     {
                         case E_USER_ERROR: case E_ERROR: case E_RECOVERABLE_ERROR: //lets dream for the day where we can catch an E_ERROR!
