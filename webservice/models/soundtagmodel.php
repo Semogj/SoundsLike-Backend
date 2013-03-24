@@ -116,7 +116,6 @@ class SoundTagModel implements DatabaseModel
                 }
 
                 $values[] = $fields + array('tagName' => $tag);
-                
             }
         } else
         {
@@ -141,8 +140,16 @@ class SoundTagModel implements DatabaseModel
         if ($statement->rowCount() > 0)
         {
             $insertedId = $db->lastInsertId();
-            $logger->logInfo("A new soundtag has been inserted successfully on the database with id $insertedId'" .
+            if ($statement->rowCount() > 1)
+            {
+                $insertedId = range($insertedId - $statement->rowCount(), $insertedId);
+                $logger->logInfo("Multiple soundtags have been inserted successfully into the database with ids '[". implode(',', $insertedId) ."]'" .
                     ' SoundTagModel::createEntry()');
+            } else
+            {
+                $logger->logInfo("A new soundtag has been inserted successfully into the database with id '$insertedId'" .
+                        ' SoundTagModel::createEntry()');
+            }
             return $insertedId;
         } else
         {
