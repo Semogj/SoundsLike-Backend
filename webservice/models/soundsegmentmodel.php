@@ -191,7 +191,7 @@ class SoundSegmentModel implements DatabaseModel
         return $statement->execute() ? $statement->fetchAll(PDO::FETCH_ASSOC) : array();
     }
 
-    public static function getTagsOfMostSimilar($segmentId, $similarLimit = 10, $limit = API_DEFAULT_RESULT_LIMIT, $offsetPage = API_DEFAULT_RESULT_PAGE)
+    public static function getTagsOfMostSimilar($segmentId, $similarLimit = 10, $includeCurrent = false, $limit = API_DEFAULT_RESULT_LIMIT, $offsetPage = API_DEFAULT_RESULT_PAGE)
     {
 
         function mergeTags($tArray1, $tArray2)
@@ -227,6 +227,11 @@ class SoundSegmentModel implements DatabaseModel
             return array();
         }
         $tags = array();
+        if ($includeCurrent)
+        {
+            $sTags = SoundTagModel::getAudioSegmentWeightedTags($segmentId);
+            $tags = mergeTags($tags, $sTags);
+        }
         $sid = null;
         while (list(, $row) = each($similarArr))
         {
