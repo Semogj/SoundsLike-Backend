@@ -191,7 +191,7 @@ class SoundSegmentModel implements DatabaseModel
         return $statement->execute() ? $statement->fetchAll(PDO::FETCH_ASSOC) : array();
     }
 
-    public static function getTagsOfMostSimilar($segmentId, $similarLimit = 10, $includeCurrent = false, $limit = API_DEFAULT_RESULT_LIMIT, $offsetPage = API_DEFAULT_RESULT_PAGE)
+    public static function getTagsOfMostSimilar($segmentId, $similarLimit = 10, $includeCurrent = false, $userId = false, $limit = API_DEFAULT_RESULT_LIMIT, $offsetPage = API_DEFAULT_RESULT_PAGE)
     {
 
         function mergeTags($tArray1, $tArray2)
@@ -214,14 +214,17 @@ class SoundSegmentModel implements DatabaseModel
                 }
                 if (!$changed)
                 {
-                    $tArray1[] = array('tagName' => $tag2['tagName'], 'weight' => intval($tag2['weight'], 10));
+                    $tArray1[] = array('tagName' => $tag2['tagName'], 'weight' => intval($tag2['weight'], 10),
+                        'usertag' => isset($tag2['usertag']) ? $tag2['usertag'] : 'false');
+
                 }
             }
             return $tArray1;
         }
 
+        $userId = validate_pos_int($userId, false);
         $similarArr = self::getMostSimilar($segmentId, $similarLimit);
-        CoreVIRUS::logDebug('>Similar count = ' . count($similarArr));
+//        CoreVIRUS::logDebug('>Similar count = ' . count($similarArr));
         if (empty($similarArr))
         {
             return array();
@@ -231,6 +234,29 @@ class SoundSegmentModel implements DatabaseModel
         {
             $sTags = SoundTagModel::getAudioSegmentWeightedTags($segmentId);
             $tags = mergeTags($tags, $sTags);
+            //if the userId is set, lets mark the tags that belong to the user!
+            
+            if ($userId)
+            {
+                $uTags = SoundTagModel::getUserTagsInAudioSegment($userId, $segmentId, count($tags));
+                $len = count($uTags);
+                $tags = array_map(function($elem) use($uTags, $len) {
+                            $elem['usertag'] = 'false';
+//                             CoreVIRUS::logDebug(print_r($elem,true));
+//                             CoreVIRUS::logDebug(print_r($uTags,true));
+                             
+                            for ($i = 0; $i < $len; $i++)
+                            {
+                                if (strcmp($elem['tagName'], $uTags[$i]['tagName']) === 0)
+                                {
+//                                    CoreVIRUS::logDebug("!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+                                    $elem['usertag'] = 'true';
+                                    break;
+                                }
+                            }
+                            return $elem;
+                        }, $tags);
+            }
         }
         $sid = null;
         while (list(, $row) = each($similarArr))
