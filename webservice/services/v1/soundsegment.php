@@ -91,10 +91,13 @@ class SoundSegmentService extends WebserviceService
                     break;
                 case 'spectrogram': {
                         $sound = SoundSegmentModel::getSingle($idSegment);
+                        $sound = $sound[0];
                         if (empty($sound['spectrogram']))
                         {
+//                            CoreVIRUS::logDebug(print_r($sound, true));
                             //get video info
                             $video = VideoModel::getSingle($sound['videoId']);
+                            $video = $video[0];
                             //check for the wav format being available
                             $formats = explode(',', $video['availableFormats']);
                             if (!in_array('wav', $formats))

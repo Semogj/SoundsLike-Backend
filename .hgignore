@@ -5,3 +5,4 @@
 \.conflict\~$
 ^frontend/sounds/movies/*$
 ^webservice/logs/logFile\.txt\.php$
+^webservice/resources$
