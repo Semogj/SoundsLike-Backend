@@ -57,6 +57,7 @@ class VideoModel implements DatabaseModel
         $result = $db->query('SELECT * FROM ' . self::TABLE_USER . ' WHERE ' . self::FIELD_VIDEO_ID . " = '$id' LIMIT 1");
         return $result ? $result->fetchAll(PDO::FETCH_ASSOC) : array();
     }
+    
 
     public static function createEntry($title, $genres = NULL, rt$actors = NULL, $year = NULL)
     {

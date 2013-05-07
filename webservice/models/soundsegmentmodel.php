@@ -292,7 +292,15 @@ class SoundSegmentModel implements DatabaseModel
         $result = $db->query($sql);
         return $result ? $result->fetchAll(PDO::FETCH_ASSOC) : array();
     }
-
+    
+    public static function updateSpectrogram($segmentId, $imagedata){
+        $sql = 'UPDATE SoundSegment SET spectrogram = ? WHERE idSoundSegment = ?';
+        $stmt = CoreVIRUS::getDb()->prepare($sql);
+        $stmt->bindParam(1, $imagedata, PDO::PARAM_LOB);
+        $stmt->bindParam(2, $segmentId, PDO::PARAM_INT);
+        $stmt->execute();
+    }
+    
     public static function createEntry($videoId, $start = null, $end = null)
     {
         return false;

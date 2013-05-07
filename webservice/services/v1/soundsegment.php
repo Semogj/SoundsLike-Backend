@@ -10,6 +10,7 @@ if (!defined("VIRUS"))
 use VIRUS\webservice\CoreVIRUS;
 use VIRUS\webservice\WebserviceRequest;
 use VIRUS\webservice\WebserviceResponse;
+use VIRUS\webservice\WebserviceErrorResponse;
 use VIRUS\webservice\WebserviceCollection;
 use VIRUS\webservice\models\VideoModel;
 use VIRUS\webservice\WebserviceOkResponse;
@@ -58,7 +59,6 @@ class SoundSegmentService extends WebserviceService
             $resultArr = SoundSegmentModel::get($limit, $offsetPage);
             //var_export($resultArr);
             $resultResource = new WebserviceCollection($this->getServiceName(), $resultArr, null, $limit, $offsetPage);
-            
         } else
         {
 
@@ -70,7 +70,7 @@ class SoundSegmentService extends WebserviceService
                     $resultResource = new WebserviceCollection($this->getServiceName(), $resultArr);
                     break;
                 case 'similarsoundtag' : case 'similarsoundtags': case 'similartag': case 'similartags':
-                    $similarLimit = $request->getSegmentAsInt('similarLimit',10);
+                    $similarLimit = $request->getSegmentAsInt('similarLimit', 10);
                     $includeCurrent = $request->getSegment('includeCurrent', false) ? true : false;
                     $userId = $request->getSegmentAsInt('user', false);
                     $resultArr = SoundSegmentModel::getTagsOfMostSimilar($idSegment, $similarLimit, $includeCurrent, $userId, $limit, $offsetPage); //fetch result
@@ -89,13 +89,51 @@ class SoundSegmentService extends WebserviceService
                             $resultResource = new WebserviceCollection('soundtag', $resultArr);
                     }
                     break;
+                case 'spectrogram': {
+                        $sound = SoundSegmentModel::getSingle($idSegment);
+                        if (empty($sound['spectrogram']))
+                        {
+                            //get video info
+                            $video = VideoModel::getSingle($sound['videoId']);
+                            //check for the wav format being available
+                            $formats = explode(',', $video['availableFormats']);
+                            if (!in_array('wav', $formats))
+                            {
+                                //TODO: log here!;
+                                return WebserviceErrorResponse::getErrorResponse(WebserviceErrorResponse::ERR_OPERATION_FAILED, $request->getAcceptType(), 'The requested resource does not support spectrogram. Only resources with wav format supports this feature.');
+                            }
+                            $audioFilePath = ROOT_DIRECTORY . $video['resourcesPath'] . '.wav';
+                            if (!file_exists($audioFilePath))
+                            {
+                                CoreVIRUS::logFatal("The file $audioFilePath doesn't exist! Cannot use it for the creation of the spectrogram.");
+                                return WebserviceErrorResponse::getErrorResponse(WebserviceErrorResponse::ERR_OPERATION_FAILED);
+                            }
+                            //FIXME: test with floats
+                            $start = intval($video['start'], 10);
+                            $duration = intval($video['end'], 10) - $start;
+                            $outputFile = $video['textId'] . '-spectrogram.png';
+                            $command = "sox $audioFilePath -n trim $start $duration spectrogram -x 800 -y 200 -l -r -o {$outputFile}";
+                            exec($command);
+                            $outputFile = ROOT_DIRECTORY . $video['resourcesPath'] . '-spectrogram.png';
+                            if (!file_exists($outputFile))
+                            {
+                                CoreVIRUS::logError("Cannot find spectrogram file '$outputFile' after sox command exec.");
+                                return WebserviceErrorResponse::getErrorResponse(WebserviceErrorResponse::ERR_OPERATION_FAILED);
+                            }
+                            $sound['spectrogram'] = file_get_contents($outputFile);
+                            SoundSegmentModel::updateSpectrogram($idSegment, $sound['spectrogram']);
+                        }
+                        $resultResource = new WebserviceCollection($this->getServiceName(), $sound);
+                        $output = new WebserviceOkResponse($request->getAcceptType(), 200, array($resultResource));
+                    }
                 default:
                     $resultArr = SoundSegmentModel::getSingle($idSegment);
                     $resultResource = new WebserviceCollection($this->getServiceName(), $resultArr);
                     $output = new WebserviceOkResponse($request->getAcceptType(), 200, array($resultResource));
             }
         }
-        return new WebserviceOkResponse($request->getAcceptType(), HTML_200_OK, array($resultResource));;
+        return new WebserviceOkResponse($request->getAcceptType(), HTML_200_OK, array($resultResource));
+        ;
     }
 
     public function post(WebserviceRequest $request)
