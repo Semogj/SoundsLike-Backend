@@ -21,9 +21,9 @@ if (!defined("VIRUS"))
 class CoreVIRUS
 {
 
-    const LOG_DEBUG_VERBOSE = 100;
+    const LOG_DEBUG_VERBOSE = 100;// Most Verbose
     const LOG_DEBUG_DETAILED = 200;
-    const LOG_DEBUG = 300; // Most Verbose
+    const LOG_DEBUG = 300; 
     const LOG_INFO = 400; // ...
     const LOG_WARNING = 500; // ...
     const LOG_ERROR = 600; // ...
@@ -38,6 +38,7 @@ class CoreVIRUS
             $logger = null;
     private static $controller = null;
     private static $loadedModels = array();
+    private static $config = array();
 
     /**
      * Returns a registered PDO database connector.
@@ -63,6 +64,13 @@ class CoreVIRUS
     public static function registerDB(\PDO $db, $dbIdentifier = "DEFAULT")
     {
         self::$dbArray[$dbIdentifier] = $db;
+    }
+    public static function registerConfig(array $config){
+        self::$config = $config;
+    }
+    
+    public static function getConfig($key = null, $default = null){
+        return $key === null ? self::$config : arrayFetchValue(self::$config, $key, $default);
     }
 
     /**
@@ -240,6 +248,7 @@ class CoreVIRUS
                 }
         );
     }
+    
 
     /**
      * Verifies and try to load a service from the service folder.

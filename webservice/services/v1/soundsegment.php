@@ -94,8 +94,8 @@ class SoundSegmentService extends WebserviceService
                         $sound = $sound[0];
                         if (empty($sound['spectrogram']))
                         {
-//                            CoreVIRUS::logDebug(print_r($sound, true));
-                            //get video info
+                            CoreVIRUS::logDebug("Spectrogram requested for soundsegment '$idSegment': No cache.");
+
                             $video = VideoModel::getSingle($sound['videoId']);
                             $video = $video[0];
                             //check for the wav format being available
@@ -103,21 +103,27 @@ class SoundSegmentService extends WebserviceService
                             if (!in_array('wav', $formats))
                             {
                                 //TODO: log here!;
+                                CoreVIRUS::logDebug("!!!!!!!!!!!");
                                 return WebserviceErrorResponse::getErrorResponse(WebserviceErrorResponse::ERR_OPERATION_FAILED, $request->getAcceptType(), 'The requested resource does not support spectrogram. Only resources with wav format supports this feature.');
                             }
-                            $audioFilePath = ROOT_DIRECTORY . $video['resourcesPath'] . '.wav';
-                            if (!file_exists($audioFilePath))
+                            $videoFilePath = ROOT_DIRECTORY . CoreVIRUS::getConfig('resourcesPath'). $video['resourcesPath'];
+                            if (!is_readable($videoFilePath . '.wav'))
                             {
-                                CoreVIRUS::logFatal("The file $audioFilePath doesn't exist! Cannot use it for the creation of the spectrogram.");
+                                CoreVIRUS::logFatal("The file $videoFilePath.wav  doesn't exist! Cannot use it for the creation of the spectrogram.");
                                 return WebserviceErrorResponse::getErrorResponse(WebserviceErrorResponse::ERR_OPERATION_FAILED);
                             }
                             //FIXME: test with floats
-                            $start = intval($video['start'], 10);
-                            $duration = intval($video['end'], 10) - $start;
-                            $outputFile = $video['textId'] . '-spectrogram.png';
-                            $command = "sox $audioFilePath -n trim $start $duration spectrogram -x 800 -y 200 -l -r -o {$outputFile}";
-                            exec($command);
-                            $outputFile = ROOT_DIRECTORY . $video['resourcesPath'] . '-spectrogram.png';
+                            $start = intval($sound['start'], 10);
+                            $duration = intval($sound['end'], 10) - $start;
+                            $outputFile = $videoFilePath . '-spectrogram.png';
+//                            $command = "sox";
+                            //sox "/home/semogj/Dropbox/www/VIRUS-AudioEvents-Webservice/webservice/resources/BacktotheFuture/BacktotheFuture.wav"
+                            // -n trim 5344 4 spectrogram -x 800 -y 200 -l -r 
+                            // -o /home/semogj/Dropbox/www/VIRUS-AudioEvents-Webservice/webservice/resources/BacktotheFuture/BacktotheFuture-spectrogram.png
+                            $command = "sox \"$videoFilePath.wav\" -n trim $start $duration spectrogram -x 800 -y 200 -l -r -o \"$outputFile\"";
+//                            $output = shell_exec($command, $output);
+                            exec($command, $output);
+                            
                             if (!file_exists($outputFile))
                             {
                                 CoreVIRUS::logError("Cannot find spectrogram file '$outputFile' after sox command exec.");
@@ -125,6 +131,8 @@ class SoundSegmentService extends WebserviceService
                             }
                             $sound['spectrogram'] = file_get_contents($outputFile);
                             SoundSegmentModel::updateSpectrogram($idSegment, $sound['spectrogram']);
+                        }else{
+                            CoreVIRUS::logDebug("Spectrogram requested for soundsegment '$idSegment': Found a cached spectogram.");
                         }
                         $resultResource = new WebserviceCollection($this->getServiceName(), $sound);
                         $output = new WebserviceOkResponse($request->getAcceptType(), 200, array($resultResource));

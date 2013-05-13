@@ -24,7 +24,8 @@ $config = array(
     //for log file: (most verbose)| ALL=0 -- 1 -- 2 -- DEBUG=3 -- INFO=2 -- WARNING=3 -- ERROR=4 -- FATAL=5  -- OFF=10 |(less verbose)
     'loglevel' => 3,
     //for error reporting. This will only affect errors that cannot be processed by the custom error handler;
-    'defaultTimezone' => 'Europe/Lisbon'
+    'defaultTimezone' => 'Europe/Lisbon',
+    'resourcesPath' => 'resources/'
 );
 
 //constant to prevent direct script access
@@ -111,7 +112,7 @@ function includeSafe($filename)
     }
     return $result;
 }
-
+CoreVIRUS::registerConfig($config);
 //Register an autoloader. Now we are able to load and use namespaced classes without the need of importing them.
 CoreVIRUS::registerAutoloader();
 
