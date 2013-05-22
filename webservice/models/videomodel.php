@@ -10,12 +10,12 @@ class VideoModel implements DatabaseModel
 {
 
     const FIELD_VIDEO_ID = "idVideo";
-    const FIELD_TEXT_ID  = "textId";
-    const FIELD_TITLE    = 'title';
-    const FIELD_GENRES   = 'genres';
-    const FIELD_ACTORS   = 'actors';
-    const FIELD_YEAR     = 'year';
-    const TABLE_USER    = "Video";
+    const FIELD_TEXT_ID = "textId";
+    const FIELD_TITLE = 'title';
+    const FIELD_GENRES = 'genres';
+    const FIELD_ACTORS = 'actors';
+    const FIELD_YEAR = 'year';
+    const TABLE_USER = "Video";
 
     public static function filter()
     {
@@ -24,25 +24,24 @@ class VideoModel implements DatabaseModel
 
     public static function get($limit, $offsetPage)
     {
-        $limit      = validate_pos_int($limit, API_DEFAULT_RESULT_LIMIT);
+        $limit = validate_pos_int($limit, API_DEFAULT_RESULT_LIMIT);
         $offsetPage = (validate_pos_int($offsetPage, API_DEFAULT_RESULT_PAGE) - 1) * $limit; //offset
 
         /* @var $db \PDO */
-        $db     = CoreVIRUS::getDb();
+        $db = CoreVIRUS::getDb();
         $result = $db->query('SELECT *  FROM ' . self::TABLE_USER . " LIMIT $offsetPage, $limit");
 
         return $result ? $result->fetchAll(PDO::FETCH_ASSOC) : false;
     }
 
-    public static function getFiltered(ModelFilter $filter, $limit = API_DEFAULT_RESULT_LIMIT,
-                                       $offsetPage = API_DEFAULT_RESULT_PAGE)
+    public static function getFiltered(ModelFilter $filter, $limit = API_DEFAULT_RESULT_LIMIT, $offsetPage = API_DEFAULT_RESULT_PAGE)
     {
-        $limit      = validate_pos_int($limit, API_DEFAULT_RESULT_LIMIT);
+        $limit = validate_pos_int($limit, API_DEFAULT_RESULT_LIMIT);
         $offsetPage = (validate_pos_int($offsetPage, API_DEFAULT_RESULT_PAGE) - 1) * $limit; //offset
 
         /* @var $db \PDO */
-        $db        = CoreVIRUS::getDb();
-        $where     = $filter->getStatementQuery();
+        $db = CoreVIRUS::getDb();
+        $where = $filter->getStatementQuery();
         $statement = $db->prepare('SELECT *  FROM ' . self::TABLE_USER . " WHERE $where LIMIT $offsetPage, $limit");
         if (!$statement->execute($filter->getVarArray()))
             return false;
@@ -51,13 +50,12 @@ class VideoModel implements DatabaseModel
 
     public static function getSingle($id)
     {
-        $id     = validate_pos_int($id, -1);
+        $id = validate_pos_int($id, -1);
         /* @var $db \PDO */
-        $db     = CoreVIRUS::getDb();
+        $db = CoreVIRUS::getDb();
         $result = $db->query('SELECT * FROM ' . self::TABLE_USER . ' WHERE ' . self::FIELD_VIDEO_ID . " = '$id' LIMIT 1");
         return $result ? $result->fetchAll(PDO::FETCH_ASSOC) : array();
     }
-    
 
     public static function createEntry($title, $genres = NULL, rt$actors = NULL, $year = NULL)
     {
@@ -72,7 +70,7 @@ class VideoModel implements DatabaseModel
         if (empty($genres))
         {
             if (is_array($genres))
-                $genres                     = implode(', ', $genres);
+                $genres = implode(', ', $genres);
             $fields[self::FIELD_GENRES] = trim($genres);
         }else
         {
@@ -82,8 +80,8 @@ class VideoModel implements DatabaseModel
         if (empty($actors))
         {
             if (is_array($actors))
-                $actors                     = implode(', ', $actors);
-            $actors                     = trim($actors);
+                $actors = implode(', ', $actors);
+            $actors = trim($actors);
             $fields[self::FIELD_ACTORS] = trim($actors);
         }else
         {
@@ -100,12 +98,12 @@ class VideoModel implements DatabaseModel
             }
             $fields[self::FIELD_YEAR] = trim($year);
         }
-        $x                        = function ($s) { //For making "?,?,?,?", depending on the number of available fields to insert
+        $x = function ($s) { //For making "?,?,?,?", depending on the number of available fields to insert
                     return $s == 0 ? '' : '?' + str_repeat(',?', $s - 1);
                 };
-        $query     = 'INSERT INTO ' . self::TABLE_USER . ' (' . implode(', ', array_keys($fields)) . ') VALUES (' . $x(count($fields)) . ')';
+        $query = 'INSERT INTO ' . self::TABLE_USER . ' (' . implode(', ', array_keys($fields)) . ') VALUES (' . $x(count($fields)) . ')';
         /* @var $db \PDO */
-        $db        = CoreVIRUS::getDb();
+        $db = CoreVIRUS::getDb();
         $statement = $db->prepare($query);
         return $statement->execute(array_values($fields)) && $statement->rowCount() > 0 ? $db->lastInsertId() : false;
     }
@@ -122,12 +120,12 @@ class VideoModel implements DatabaseModel
             return intval($result[0], 10);
         }else
         {
-            $where     = $filter->getStatementQuery();
+            $where = $filter->getStatementQuery();
             $statement = $db->prepare('SELECT count(*)  FROM ' . self::TABLE_USER . " WHERE $where");
             if (!$statement->execute($filter->getVarArray()))
                 return false;
-            $result    = null;
-            if (!($result    = $result->fetch(PDO::FETCH_NUM)))
+            $result = null;
+            if (!($result = $result->fetch(PDO::FETCH_NUM)))
                 return false;
             return intval($result[0], 10);
         }
@@ -144,11 +142,11 @@ class VideoFilter extends ModelFilter
 {
 
     const FIELD_VIDEO_ID = "idVideo";
-    const FIELD_TEXT_ID  = "textId";
-    const FIELD_TITLE    = 'title';
-    const FIELD_GENRES   = 'genres';
-    const FIELD_ACTORS   = 'actors';
-    const FIELD_YEAR     = 'year';
+    const FIELD_TEXT_ID = "textId";
+    const FIELD_TITLE = 'title';
+    const FIELD_GENRES = 'genres';
+    const FIELD_ACTORS = 'actors';
+    const FIELD_YEAR = 'year';
 
     public function __construct()
     {
