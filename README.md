@@ -6,8 +6,7 @@ The PHP webservice associated to the VIRUS project (http://virus.di.fc.ul.pt) an
 ### For more information and install instructions, go [here](https://github.com/Semogj/SoundsLike-Frontend/)
 
 
-Audio Similarity DB
-===========================
+## Audio Similarity DB
 
 You will find a directory named "Audio Similarity DB" which contains the sql structure and data used for buiding and testing the SoundsLike prototype.
 
@@ -18,8 +17,7 @@ The remaining files are the "Entity–relationship" model for the current databa
 The database includes similarity data for the movie "Back To The Future". You can find and download the used version here:
 https://mega.co.nz/#F!Y9xFAJSI!f6d2HCVOOqQvMJMZZvkfjg
 
-SoundsLike
-=======================
+## SoundsLike
 
 SoundsLike is a prototype which is integrated directly as a part of MovieClouds for the purpose of classifying and browsing movies’ soundtracks.
 
