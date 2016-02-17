@@ -23,7 +23,7 @@ The ".mwb" files are [MySQL Workbench](https://www.mysql.com/products/workbench/
 
 The database files includes the similarity data for the movie "Back To The Future". This data is the result of running an audio comparison tool developed in a context of a previous VIRUS project, not included in this repository. The movie was divided in 4 seconds audio pieces, then each piece was compared with others.
 
-A similarity entry represents the difference between two different audio excertps. This difference is translated to a decimal value, whera 0.0 means the same value and the value raises as long the audio sounds different in the ears of a user.
+A similarity entry represents the difference between two different audio excertps. This difference is translated to a decimal value, whera 0.0 means the same value (sounds exactly the same). The value raises as long the audio sounds different in the ears of a user. There is no maximum value (higher = diferent). The value is just an numeric value, there is no unit (distance can be measured in meters, but similarity here is represented in plain decimal numbers).
 
 The reason behind the use of the movie "Back to the Future" was due to be one of the project coordinator favourite movie. We always try to appeal our coordinators and bosses ;).
 
