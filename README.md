@@ -1,10 +1,10 @@
 #SoundsLike-Virus-Webservice
 
+**For information about the project, including install instructions, please [visit the SoundsLike Frontend repository](https://github.com/Semogj/SoundsLike-Frontend/)**
+
 SoundsLike presents as an web application for audio classification game for movies, associated to the VIRUS project.
 
 This repository holds the backend solution for Soundslike, containing the PHP webservice and files for the creation of a MySQL database.
-
-For information about the project, including install instructions, please [visit the SoundsLike Frontend repository](https://github.com/Semogj/SoundsLike-Frontend/)
 
 The backend was developped and tested with PHP 5.3.
 
