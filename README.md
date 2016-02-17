@@ -4,12 +4,9 @@ SoundsLike presents as an web application for audio classification game for movi
 
 This repository holds the backend solution for Soundslike, containing the PHP webservice and files for the creation of a MySQL database.
 
-### For information about the project, including install instructions, please [visit the SoundsLike Frontend repository](https://github.com/Semogj/SoundsLike-Frontend/)
+For information about the project, including install instructions, please [visit the SoundsLike Frontend repository](https://github.com/Semogj/SoundsLike-Frontend/)
 
-## Used technology and libraries
-
-The following technology were used to implement the backend:
-
+The backend was developped and tested with PHP 5.3.
 
 ## Audio Similarity Database
 
